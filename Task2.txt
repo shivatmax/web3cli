@@ -1,0 +1,39 @@
+A short write-up covering:
+
+Design tradeoffs (e.g., model choice, security vs. speed)
+
+How you'd scale the prototype (e.g., caching, on-chain/off-chain components)
+
+Risks of LLM-generated code in blockchain contexts
+
+Requirements
+Use an LLM (OpenAI, Hugging Face, or an open-source model like Mistral)
+
+Implement guardrails to avoid insecure code generation
+
+Provide either a CLI or a simple web interface
+
+Task 2: Smart Contract Explainability
+Problem: Users need plain-English summaries of complex smart contracts.
+
+Your Goal:
+Build a tool that:
+
+Takes a contract address (on Sepolia testnet) or raw Solidity code as input
+
+Uses an LLM to generate a technical summary including:
+
+Key functions
+
+Permissions
+
+Security patterns
+
+Additional Requirement:
+Use a blockchain library ethers.js to fetch the contract ABI or bytecode.
+
+
+# gas optim
+# with security
+# upgradable contract or not - ask Users (2 contract, one proxy pyment contract will be same, one main feature contract will change ) Type=> -UUPS or -Transparent
+# 

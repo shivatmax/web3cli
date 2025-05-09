@@ -1,0 +1,22 @@
+#:schema ./schema.json
+
+# Default model to use for AI completions
+default_model = "gpt-4o-mini"
+
+# OpenAI API key - replace with your actual key
+openai_api_key = "your-openai-api-key-here"
+
+# Etherscan API key for fetching contract ABIs
+etherscan_api_key = "your-etherscan-api-key-here"
+
+# Optional: Configure custom commands
+[commands]
+ # [commands.explain]
+ #  command = "explain"
+ #  prompt = "Explain the following smart contract code in plain English, highlighting key functions, permissions, and security patterns:"
+ #  require_stdin = true
+
+  # [commands.generate]
+  # command = "generate"
+  # prompt = "Generate a secure Solidity smart contract based on these requirements:"
+  # require_stdin = true
