@@ -1,6 +1,12 @@
 {
   "rebuild-test": {
     "name": "rebuild-test",
-    "timestamp": "2025-05-10T06:15:37.338Z"
+    "timestamp": "2025-05-10T07:27:42.507Z",
+    "updated": true
+  },
+  "testdb": {
+    "name": "testdb",
+    "timestamp": "2025-05-10T07:27:42.508Z",
+    "updated": true
   }
 }

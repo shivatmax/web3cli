@@ -97,9 +97,7 @@ export function loadConfig(): Config {
   joycon.addLoader({
     test: /\.toml$/,
     loadSync: (filepath) => {
-      console.log(`Loading TOML config from: ${filepath}`);
       const content = fs.readFileSync(filepath, "utf-8");
-      console.log(`TOML content: ${content.substring(0, 100)}...`);
       return toml.parse(content);
     },
   });
@@ -109,9 +107,7 @@ export function loadConfig(): Config {
    */
   function safeLoad(filenames: string[], cwd: string, stopDir: string) {
     try {
-      console.log(`Looking for config files: ${filenames.join(', ')} in ${cwd}`);
       const result = joycon.loadSync(filenames, cwd, stopDir);
-      console.log(`Config found: ${result.path || 'none'}`);
       return result.data as Config | undefined;
     } catch (err) {
       // JoyCon will throw if it finds a file but fails to parse JSON/TOML.
@@ -156,12 +152,6 @@ export function loadConfig(): Config {
   if (process.env.ETHERSCAN_API_KEY && !config.etherscan_api_key) {
     config.etherscan_api_key = process.env.ETHERSCAN_API_KEY;
   }
-  
-  console.log("Final config:", { 
-    default_model: config.default_model,
-    openai_api_key: config.openai_api_key ? "PRESENT" : "MISSING",
-    etherscan_api_key: config.etherscan_api_key ? "PRESENT" : "MISSING"
-  });
 
   return config;
 } 
