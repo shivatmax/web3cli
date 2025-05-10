@@ -31,7 +31,7 @@ export function registerGenerateCommand(cli: any): CliCommand {
     .action(async (prompt: string[], flags: any) => {
       const pipeInput = await readPipeInput();
       if (flags.agent) {
-        console.log('🚀 Using experimental multi-agent mode');
+        console.log('➤ 🚀 Multi-agent mode enabled');
         await runAgentMode(prompt.join(' '), flags);
       } else {
         await generateContract(prompt.join(' '), { ...flags, pipeInput });

@@ -36,7 +36,7 @@ export async function generateContract(
   prompt: string,
   options: GenerateOptions
 ): Promise<{ code: string; securityNotes: string; testCode?: string }> {
-  console.log(`Generating smart contract for: ${prompt}`);
+  console.log('➤ Generating smart contract…');
   
   // Gather context from various sources
   let context = '';
@@ -79,6 +79,8 @@ export async function generateContract(
   
   // Parse the response
   const { code, securityNotes, testCode } = parseResponse(result.text);
+  
+  console.log('✅ Contract generated successfully.');
   
   // Save the contract to a file if requested
   if (options.output && code) {

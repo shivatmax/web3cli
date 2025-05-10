@@ -112,8 +112,8 @@ export async function runAgentMode(
   testCode?: string;
   logs: string[];
 }> {
-  console.log("🚀 Initializing Advanced Agentic System for smart contract generation...");
-  console.log("📊 Setting up specialized agents for collaborative development...");
+  console.log('➤ 🚀 Initializing Advanced Agentic System…');
+  console.log('➤ 📊 Setting up specialized agents…');
   
   try {
     // Load configuration

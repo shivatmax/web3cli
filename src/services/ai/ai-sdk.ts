@@ -5,7 +5,8 @@
  */
 import OpenAI from "openai"
 import { getModelProvider, getRealModelId } from "./models"
-import { Config } from "../config/config"
+import { Config, configDirPath } from "../config/config"
+import path from "node:path"
 
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { Anthropic } from "@anthropic-ai/sdk"
@@ -42,8 +43,12 @@ export async function getSDKModel(modelId: string, config: Config) {
   } catch (error) {
     const e = error as Error;
     if (e.message.includes("API key not found")) {
+      const localPath = path.join(process.cwd(), "web3cli.toml");
+      const globalPath = path.join(configDirPath, "web3cli.toml");
       throw new Error(
-        `${provider.charAt(0).toUpperCase() + provider.slice(1)} API key not configured. Please set the ${provider.toUpperCase()}_API_KEY in your environment variables or config file.`
+        `${provider.charAt(0).toUpperCase() + provider.slice(1)} API key not configured. ` +
+        `Please set the ${provider.toUpperCase()}_API_KEY environment variable, or add ${provider.toLowerCase()}_api_key ` +
+        `to your web3cli.toml configuration file (${localPath} or ${globalPath}).`
       );
     }
     throw error;
@@ -58,9 +63,12 @@ export async function getSDKModel(modelId: string, config: Config) {
  */
 function getOpenAIClient(config: Config) {
   if (!config.openai_api_key) {
+    const localPath = path.join(process.cwd(), "web3cli.toml");
+    const globalPath = path.join(configDirPath, "web3cli.toml");
     throw new Error(
-      "OpenAI API key not found. Set the OPENAI_API_KEY environment variable or configure it in the config file."
-    )
+      `OpenAI API key not found. Please set the OPENAI_API_KEY environment variable, ` +
+      `or add openai_api_key to your web3cli.toml configuration file (${localPath} or ${globalPath}).`
+    );
   }
 
   const baseURL = config.openai_api_url || process.env.OPENAI_API_URL
@@ -83,9 +91,12 @@ function getOpenAIClient(config: Config) {
  */
 function getAnthropicClient(config: Config) {
   if (!config.anthropic_api_key) {
+    const localPath = path.join(process.cwd(), "web3cli.toml");
+    const globalPath = path.join(configDirPath, "web3cli.toml");
     throw new Error(
-      "Anthropic API key not found. Set the ANTHROPIC_API_KEY environment variable or configure it in the config file."
-    )
+      `Anthropic API key not found. Please set the ANTHROPIC_API_KEY environment variable, ` +
+      `or add anthropic_api_key to your web3cli.toml configuration file (${localPath} or ${globalPath}).`
+    );
   }
   
   const anthropic = new Anthropic({
@@ -171,9 +182,12 @@ function getAnthropicClient(config: Config) {
  */
 function getGeminiClient(config: Config, modelName: string) {
   if (!config.gemini_api_key) {
+    const localPath = path.join(process.cwd(), "web3cli.toml");
+    const globalPath = path.join(configDirPath, "web3cli.toml");
     throw new Error(
-      "Gemini API key not found. Set the GEMINI_API_KEY environment variable or configure it in the config file."
-    )
+      `Gemini API key not found. Please set the GEMINI_API_KEY environment variable, ` +
+      `or add gemini_api_key to your web3cli.toml configuration file (${localPath} or ${globalPath}).`
+    );
   }
 
   // Initialize the Gemini API
@@ -241,9 +255,12 @@ function getGeminiClient(config: Config, modelName: string) {
  */
 function getGroqClient(config: Config) {
   if (!config.groq_api_key) {
+    const localPath = path.join(process.cwd(), "web3cli.toml");
+    const globalPath = path.join(configDirPath, "web3cli.toml");
     throw new Error(
-      "Groq API key not found. Set the GROQ_API_KEY environment variable or configure it in the config file."
-    )
+      `Groq API key not found. Please set the GROQ_API_KEY environment variable, ` +
+      `or add groq_api_key to your web3cli.toml configuration file (${localPath} or ${globalPath}).`
+    );
   }
   
   // Groq uses the OpenAI-compatible API
@@ -262,9 +279,12 @@ function getGroqClient(config: Config) {
  */
 function getMistralClient(config: Config) {
   if (!config.mistral_api_key) {
+    const localPath = path.join(process.cwd(), "web3cli.toml");
+    const globalPath = path.join(configDirPath, "web3cli.toml");
     throw new Error(
-      "Mistral API key not found. Set the MISTRAL_API_KEY environment variable or configure it in the config file."
-    )
+      `Mistral API key not found. Please set the MISTRAL_API_KEY environment variable, ` +
+      `or add mistral_api_key to your web3cli.toml configuration file (${localPath} or ${globalPath}).`
+    );
   }
   
   // Mistral uses the OpenAI-compatible API

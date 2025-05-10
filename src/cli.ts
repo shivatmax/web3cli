@@ -20,6 +20,11 @@ import {
 } from "./services/contract/contract-commands"
 import { registerVectorDBCommands } from "./cli/commands/vector-db"
 import { registerContractCommand } from "./cli/commands/contract"
+import { step, success, fail, detail } from "./utils/logger"
+
+// Redirect console methods to clean log styles
+console.log = (...args: any[]) => step(args.join(" "));
+console.error = (...args: any[]) => fail(args.join(" "));
 
 if (typeof PKG_NAME === "string" && typeof PKG_VERSION === "string") {
   updateNotifier({
