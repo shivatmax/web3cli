@@ -15,17 +15,24 @@ The tool uses advanced AI models with specialized guardrails to ensure secure co
 
 ### Installation
 
-Install Web3CLI globally using npm:
-
 ```bash
-npm install -g web3cli
+git clone https://github.com/shivatmax/web3cli.git
+```
+```bash
+cd web3cli
+```
+```bash
+pnpm install
+```
+```bash
+pnpm build
+```
+```bash
+npm link
 ```
 
-Or with pnpm:
 
-```bash
-pnpm add -g web3cli
-```
+
 
 ### Configuration
 
