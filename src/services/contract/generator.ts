@@ -208,5 +208,5 @@ async function getSearchContext(query: string): Promise<string> {
 async function getVectorDBContext(collection: string, query: string): Promise<string> {
   const vectorDB = new VectorDB();
   const docs = await vectorDB.similaritySearch(collection, query, 5);
-  return `VectorDB Results:\n${docs.map(d => d.text).join('\n\n')}`;
+  return `VectorDB Results:\n${docs.map(d => d.pageContent || '').join('\n\n')}`;
 } 
