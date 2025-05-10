@@ -109,3 +109,53 @@ export function openai(model: string): string {
 export function anthropic(model: string): string {
   return `anthropic:${model}`;
 } 
+
+/**
+ * Gemini model provider
+ * 
+ * @param model Model name
+ * @returns Model identifier
+ */
+export function gemini(model: string): string {
+  return `gemini:${model}`;
+}
+
+/**
+ * Groq model provider
+ * 
+ * @param model Model name
+ * @returns Model identifier
+ */
+export function groq(model: string): string {
+  return `groq:${model}`;
+}
+
+/**
+ * Mistral model provider
+ * 
+ * @param model Model name
+ * @returns Model identifier
+ */
+export function mistral(model: string): string {
+  return `mistral:${model}`;
+}
+
+/**
+ * GitHub Copilot model provider
+ * 
+ * @param model Model name
+ * @returns Model identifier
+ */
+export function copilot(model: string): string {
+  return `copilot:${model}`;
+}
+
+/**
+ * Ollama model provider
+ * 
+ * @param model Model name
+ * @returns Model identifier
+ */
+export function ollama(model: string): string {
+  return `ollama:${model}`;
+}

@@ -76,10 +76,42 @@ export const ConfigSchema = z.object({
     .string()
     .optional()
     .describe('Default to the "OPENAI_API_URL" environment variable'),
+  anthropic_api_key: z
+    .string()
+    .optional()
+    .describe('Default to the "ANTHROPIC_API_KEY" environment variable'),
+  gemini_api_key: z
+    .string()
+    .optional()
+    .describe('Default to the "GEMINI_API_KEY" environment variable'),
+  gemini_api_url: z
+    .string()
+    .optional()
+    .describe('Default to the "GEMINI_API_URL" environment variable'),
+  groq_api_key: z
+    .string()
+    .optional()
+    .describe('Default to the "GROQ_API_KEY" environment variable'),
+  groq_api_url: z
+    .string()
+    .optional()
+    .describe('Default to the "GROQ_API_URL" environment variable'),
+  mistral_api_key: z
+    .string()
+    .optional()
+    .describe('Default to the "MISTRAL_API_KEY" environment variable'),
+  mistral_api_url: z
+    .string()
+    .optional()
+    .describe('Default to the "MISTRAL_API_URL" environment variable'),
   etherscan_api_key: z
     .string()
     .optional()
     .describe('Default to the "ETHERSCAN_API_KEY" environment variable'),
+  ollama_host: z
+    .string()
+    .optional()
+    .describe('Default to the "OLLAMA_HOST" environment variable'),
   commands: z.array(AICommandSchema).optional(),
 });
 
@@ -144,13 +176,26 @@ export function loadConfig(): Config {
     ],
   };
 
-  // Add environment variables if they exist
-  if (process.env.OPENAI_API_KEY && !config.openai_api_key) {
-    config.openai_api_key = process.env.OPENAI_API_KEY;
-  }
-  
-  if (process.env.ETHERSCAN_API_KEY && !config.etherscan_api_key) {
-    config.etherscan_api_key = process.env.ETHERSCAN_API_KEY;
+  // Add environment variables with appropriate fallbacks
+  const envVarMapping = {
+    openai_api_key: "OPENAI_API_KEY",
+    openai_api_url: "OPENAI_API_URL",
+    anthropic_api_key: "ANTHROPIC_API_KEY",
+    gemini_api_key: "GEMINI_API_KEY",
+    gemini_api_url: "GEMINI_API_URL",
+    groq_api_key: "GROQ_API_KEY",
+    groq_api_url: "GROQ_API_URL",
+    mistral_api_key: "MISTRAL_API_KEY",
+    mistral_api_url: "MISTRAL_API_URL",
+    etherscan_api_key: "ETHERSCAN_API_KEY",
+    ollama_host: "OLLAMA_HOST",
+  };
+
+  // Populate config from environment variables if not already set
+  for (const [configKey, envVar] of Object.entries(envVarMapping)) {
+    if (process.env[envVar] && !(config as any)[configKey]) {
+      (config as any)[configKey] = process.env[envVar];
+    }
   }
 
   return config;

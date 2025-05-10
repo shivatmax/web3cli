@@ -12,6 +12,7 @@ import {
   MODEL_PREFIXES,
   getAllModels,
   getCheapModelId,
+  getModelProvider
 } from "./models"
 import cliPrompts from "prompts"
 import { stdin, readPipeInput } from "../../utils/tty"
@@ -118,11 +119,21 @@ export async function ask(
     (m) => m.id === modelId || m.realId === modelId
   )
   if (!matchedModel) {
-    throw new CliError(
-      `model not found: ${modelId}\n\navailable models: ${models
-        .map((m) => m.id)
-        .join(", ")}`
-    )
+    // Get a list of models by prefix to suggest alternatives
+    const modelPrefix = modelId.split('-')[0];
+    const similarModels = models
+      .filter(m => m.id.startsWith(`${modelPrefix}-`))
+      .map(m => m.id);
+    
+    let errorMessage = `Model not found: ${modelId}\n\n`;
+    
+    if (similarModels.length > 0) {
+      errorMessage += `Did you mean one of these models?\n${similarModels.join('\n')}\n\n`;
+    }
+    
+    errorMessage += `Available models: ${models.map((m) => m.id).join(', ')}`;
+    
+    throw new CliError(errorMessage);
   }
   const realModelId = matchedModel.realId || modelId
   const openai = await getSDKModel(modelId, config)
@@ -227,30 +238,59 @@ ${content.content}
       }
     }
     
+    const provider = getModelProvider(modelId);
+    console.log(`Using ${provider.toUpperCase()} provider with model: ${realModelId}`);
+    
     if (options.stream !== false) {
-      const stream = await openai.chat.completions.create({
-        model: realModelId,
-        messages,
-        stream: true,
-      });
+      try {
+        const stream = await openai.chat.completions.create({
+          model: realModelId,
+          messages,
+          stream: true,
+        });
 
-      for await (const chunk of stream) {
-        const content_chunk = chunk.choices[0]?.delta?.content || "";
-        content += content_chunk;
-        logUpdate(renderMarkdown(content));
+        // Type assertion to ensure the stream has the async iterator
+        const streamWithIterator = stream as AsyncIterable<any>;
+        
+        for await (const chunk of streamWithIterator) {
+          const content_chunk = chunk.choices?.[0]?.delta?.content || "";
+          content += content_chunk;
+          logUpdate(renderMarkdown(content));
+        }
+
+        logUpdate.done();
+      } catch (error: any) {
+        logUpdate.clear();
+        
+        if (error.message && error.message.includes("does not exist")) {
+          console.error(`Error: Model '${realModelId}' not found or not available with the ${provider} provider.`);
+          console.error(`\nMake sure you've configured the API key for ${provider} and are using a valid model.`);
+          console.error(`To see all available models, run: web3cli list`);
+        } else {
+          console.error("Error during streaming request:", error.message || error);
+        }
       }
-
-      logUpdate.done();
     } else {
-      const completion = await openai.chat.completions.create({
-        model: realModelId,
-        messages,
-      });
-      
-      content = completion.choices[0].message.content || "";
-      console.log(renderMarkdown(content))
+      try {
+        const completion = await openai.chat.completions.create({
+          model: realModelId,
+          messages,
+        });
+        
+        // Handle potentially undefined choices
+        content = completion.choices?.[0]?.message?.content || "No response generated";
+        console.log(renderMarkdown(content));
+      } catch (error: any) {
+        if (error.message && error.message.includes("does not exist")) {
+          console.error(`Error: Model '${realModelId}' not found or not available with the ${provider} provider.`);
+          console.error(`\nMake sure you've configured the API key for ${provider} and are using a valid model.`);
+          console.error(`To see all available models, run: web3cli list`);
+        } else {
+          console.error("Error during request:", error.message || error);
+        }
+      }
     }
   } catch (error) {
-    console.error("Error during request:", error)
+    console.error("Error during request:", error);
   }
 } 

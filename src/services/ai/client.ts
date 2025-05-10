@@ -4,8 +4,9 @@
  * This module provides a unified interface for interacting with AI models
  * from different providers (OpenAI, Anthropic, etc.)
  */
-import { openai, anthropic } from './mastra-shim';
+import { openai, anthropic, gemini, groq, mistral, copilot, ollama } from './mastra-shim';
 import { loadConfig } from '../config/config';
+import { getModelProvider, getRealModelId } from './models';
 
 /**
  * Result from an AI generation
@@ -42,9 +43,11 @@ export interface AIClient {
  */
 class DefaultAIClient implements AIClient {
   private model: string;
+  private provider: string;
   
-  constructor(model: string) {
+  constructor(model: string, provider: string) {
     this.model = model;
+    this.provider = provider;
   }
   
   /**
@@ -55,7 +58,7 @@ class DefaultAIClient implements AIClient {
    * @returns Generated text and metadata
    */
   async generate(prompt: string, options: AIOptions = {}): Promise<AIResult> {
-    console.log(`Generating with model: ${this.model}`);
+    console.log(`Generating with ${this.provider} model: ${this.model}`);
     
     // This is a stub implementation
     // In a real implementation, this would call the actual AI API
@@ -83,9 +86,36 @@ export function getAIClient(modelOverride?: string): AIClient {
   const modelName = modelOverride || config.default_model || "gpt-4o-mini";
   
   // Determine provider based on model name
-  const clientModel = modelName.startsWith("claude") 
-    ? anthropic(modelName)
-    : openai(modelName);
+  const provider = getModelProvider(modelName);
+  const realModelId = getRealModelId(modelName);
   
-  return new DefaultAIClient(clientModel);
+  // Get the provider-specific model identifier
+  let clientModel: string;
+  
+  switch (provider) {
+    case "anthropic":
+      clientModel = anthropic(realModelId);
+      break;
+    case "gemini":
+      clientModel = gemini(realModelId);
+      break;
+    case "groq":
+      clientModel = groq(realModelId);
+      break;
+    case "mistral":
+      clientModel = mistral(realModelId);
+      break;
+    case "copilot":
+      clientModel = copilot(realModelId);
+      break;
+    case "ollama":
+      clientModel = ollama(realModelId);
+      break;
+    case "openai":
+    default:
+      clientModel = openai(realModelId);
+      break;
+  }
+  
+  return new DefaultAIClient(clientModel, provider);
 } 

@@ -100,10 +100,48 @@ This collaborative approach results in higher quality, more secure smart contrac
 
 ### Vector Database Integration
 
-- Stores blockchain and Solidity documentation
-- Maintains security patterns and best practices
-- Enables semantic search for relevant context
-- Supports RAG (Retrieval Augmented Generation) for high-quality outputs
+Web3CLI incorporates a robust vector database system for semantic search capabilities:
+
+- **Document Storage**: Store documentation, code examples, and security patterns
+- **Semantic Search**: Retrieve documents based on meaning, not just keywords
+- **Multiple Search Methods**: Both `search` and `similaritySearch` methods available 
+- **Document Structure**: Documents contain `pageContent` with the main text and `metadata` for additional information
+- **RAG Integration**: Enhances AI capabilities through Retrieval Augmented Generation
+- **Persistent Storage**: Saves collections to disk for reuse between sessions
+- **Crawling Capability**: Can recursively crawl websites to build comprehensive knowledge bases
+
+### Using Vector Search in Contract Generation
+
+The vector search capability integrates with contract generation to provide relevant documentation:
+
+```bash
+# Generate a contract with relevant documentation from the solidity collection
+web3cli generate "Create a staking contract with rewards" --read-docs solidity
+```
+
+Internally, the system:
+1. Takes the prompt and performs a semantic search against the specified collection
+2. Retrieves the most relevant documents based on semantic similarity
+3. Injects these documents as context for the AI model
+4. Uses this context to generate more accurate and secure contracts
+
+### Document Structure
+
+The vector database stores and returns documents with this structure:
+
+```typescript
+{
+  pageContent: "The document text content...",
+  metadata: {
+    source: "https://example.com/docs/page",
+    title: "Document Title",
+    url: "https://example.com/docs/page",
+    siteName: "Example Documentation",
+    author: "Example Author",
+    crawlTime: "2023-06-15T12:34:56Z"
+  }
+}
+```
 
 ## Usage Examples
 

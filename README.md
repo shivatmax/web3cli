@@ -1,15 +1,17 @@
-# Web3CLI: AI-Powered Smart Contract Generator
+# Web3CLI: AI-Powered Smart Contract Tool
 
-Generate secure Solidity smart contracts from natural language using AI.
+A comprehensive suite for generating secure Solidity smart contracts and analyzing existing contracts using AI.
 
-## Features
+## Overview
 
-- **Natural Language to Solidity**: Translate requirements into secure, minimal code
-- **Security First**: Built-in guardrails and security best practices
-- **Documentation**: Automatic security considerations and explanations
-- **Agent Mode**: Hierarchical multi-agent system for enhanced security and quality
+Web3CLI is a powerful developer tool that leverages AI to solve two key problems in blockchain development:
 
-### Installation
+1. **Natural Language to Smart Contract Logic** - Translates requirements into secure, minimal Solidity code
+2. **Smart Contract Explainability** - Provides plain-English summaries of complex smart contracts
+
+The tool uses advanced AI models with specialized guardrails to ensure secure code generation, supported by a multi-agent system, web search, and vector database integration for enhanced security and quality.
+
+## Installation
 
 ```bash
 git clone https://github.com/shivatmax/web3cli.git
@@ -27,7 +29,6 @@ pnpm build
 npm link
 ```
 
-
 ## Configuration
 
 Create a `web3cli.toml` file in your project directory:
@@ -43,31 +44,86 @@ Or set environment variables:
 - `OPENAI_API_KEY`
 - `ETHERSCAN_API_KEY` (optional, for fetching contract ABIs)
 
-## Usage
+## Key Features
 
-Generate a smart contract from natural language:
+- **Natural Language to Solidity Code** - Generate smart contracts from plain English
+- **Security-First Approach** - Built-in guardrails to prevent insecure patterns
+- **Contract Explainability** - Analyze contracts for permissions and security patterns
+- **Multi-Agent System** - Specialized agents collaborate to enhance quality
+- **Vector Database** - Local storage of blockchain documentation and security patterns
+- **Web Search** - Up-to-date information for secure implementations
+- **CLI and Terminal Interface** - Developer-friendly command-line tools
+
+## Usage Examples
+
+### General Web3 Development Questions
 
 ```bash
-web3cli generate "Create an ERC-20 token with minting restricted to addresses in an allowlist" --output Token.sol
+# Ask a general Web3 development question
+web3cli "What is the difference between ERC-20 and ERC-721?"
+
+# Ask with web search enabled
+web3cli "What is the current gas cost for token transfers?" --search
+
+# Ask with specific model
+web3cli "Explain the EIP-2981 royalty standard" --model gpt-4o
+
+# List available models
+web3cli list
 ```
 
-### Agent Mode
-
-Use the advanced multi-agent system for enhanced security and code quality:
+### Natural Language to Smart Contract
 
 ```bash
-web3cli generate "Create an ERC-20 token with minting restricted to addresses in an allowlist" --agent --output Token.sol
+# Generate a secure ERC-20 token with allowlist
+web3cli generate "Create an ERC-20 token with minting restricted to addresses in an allowlist" --output Token.sol --no-stream
+
+# Generate with agent mode for enhanced security
+web3cli generate "Create an ERC-20 token with minting restricted to addresses in an allowlist" --agent --output Token.sol --no-stream
+
+# Generate with Hardhat tests
+web3cli generate "Create an NFT collection with royalties" --hardhat --output NFTCollection.sol --no-stream
+
+# Generate with web search for security best practices
+web3cli generate "Create a vesting contract" --search --no-stream
+
+# Generate with vector DB context
+web3cli generate "Create an NFT with royalties" --read-docs solidity
 ```
 
-Agent mode activates a team of specialized AI agents that collaborate in sequence:
+### Smart Contract Explainability
 
-1. **Coordinator Agent**: Orchestrates the entire workflow
-2. **Web Search Agent**: Gathers relevant information if needed
-3. **Vector Store Agent**: Retrieves security patterns and best practices
-4. **Code Writer Agent**: Generates the initial Solidity implementation
-5. **Security Audit Agent**: Analyzes the code for vulnerabilities
-6. **Linting Agent**: Improves code style and readability
-7. **Functionality Checker**: Verifies behavior and generates tests if requested
+```bash
+# Analyze a contract by address (Mainnet)
+web3cli contract 0xdac17f958d2ee523a2206206994597c13d831ec7 --network mainnet -o
+
+# Analyze a Solidity file
+web3cli contract --file MyContract.sol --no-stream
+
+# Explain a Solidity file 
+web3cli contract:explain --file MyContract.sol --no-stream
+
+# Audit a contract
+web3cli contract:audit 0xdac17f958d2ee523a2206206994597c13d831ec7 --network mainnet -o
+
+# Ask custom questions about a contract
+web3cli contract:custom 0xdac17f958d2ee523a2206206994597c13d831ec7 "What security patterns does this contract implement?" --network mainnet
+```
+
+## Agent Mode
+
+When using the agent mode with `--agent` flag, the system follows this workflow:
+
+1. The **Coordinator Agent** receives the natural language request and plans the execution
+2. The **Web Search Agent** gathers relevant information about the requested contract if needed
+3. The **Vector Store Agent** retrieves security patterns and best practices from the vector database
+4. The **Code Writer Agent** generates the initial Solidity implementation using all gathered context
+5. The **Security Audit Agent** analyzes the code for vulnerabilities and provides improvements
+6. The **Linting Agent** cleans up the code style and improves readability
+7. The **Functionality Checker** verifies the contract works as intended and generates tests if requested
+8. The **Coordinator Agent** finalizes the output, combining all the improvements
+
+This collaborative approach results in higher quality, more secure smart contracts than using a single AI model.
 
 ## Options
 
@@ -79,59 +135,13 @@ Agent mode activates a team of specialized AI agents that collaborate in sequenc
 - `--url <urls...>`: URLs to fetch as context
 - `--search`: Enable web search for context
 - `--read-docs <collection>`: Read from vector DB docs collection
+- `--no-stream`: Disable streaming responses
 
-## Design Considerations
-
-- **Security-First Approach**: All generated contracts emphasize security best practices with clear explanations
-- **Modern Standards**: Uses the latest Solidity version and patterns by default
-- **Documentation Integration**: Vector search provides context from up-to-date documentation
-- **AI Integration**: Uses advanced AI models for high-quality contract generation and analysis
-
-## Project Structure
-
-```
-web3cli/
-├── docs/                # Documentation
-│   ├── agent-mode.md    # Multi-agent system documentation
-│   ├── problem-solution.md # Problem statement and architecture
-│   ├── project-documentation.md # Full project documentation
-│   └── vector-db.md     # Vector database documentation
-├── src/                 # Source code
-│   ├── agents/          # Agent system components
-│   │   ├── coordinator.ts     # Agent orchestration
-│   │   ├── code-writer.ts     # Code generation
-│   │   ├── security-audit.ts  # Security auditing
-│   │   ├── linting.ts         # Code quality
-│   │   ├── functionality.ts   # Verify behavior
-│   │   ├── web-search.ts      # Web search
-│   │   └── vector-store.ts    # Documentation retrieval
-│   ├── cli/             # CLI interface components
-│   │   ├── commands/         # Command implementations
-│   │   └── index.ts          # CLI entry point
-│   ├── services/        # Core services
-│   │   ├── ai/              # AI model integration
-│   │   ├── contract/        # Contract generation
-│   │   ├── search/          # Search services
-│   │   ├── vector-db/       # Vector database
-│   │   └── config/          # Configuration
-│   └── utils/           # Shared utilities
-└── templates/           # Reusable contract templates
-```
-
-# Vector Database
+## Vector Database
 
 Web3CLI includes a local vector database for storing and searching documentation using semantic similarity.
 
-## Vector Database Features
-
-- Store and retrieve documents using vector embeddings
-- Add content from URLs with automatic text extraction
-- Recursively crawl websites to build knowledge bases
-- Add local files or text directly to collections
-- Perform semantic search across your document collections
-- Integrate search results with AI queries using RAG (Retrieval Augmented Generation)
-
-## Vector Database Commands
+### Vector Database Commands
 
 ```bash
 # List all collections in the vector database
@@ -143,35 +153,75 @@ web3cli vdb-add-docs <url> --name <collection-name> --crawl --max-pages 30
 # Add a file to the vector database
 web3cli vdb-add-file <file-path> --name <collection-name> --title "Document Title"
 
-# Add text directly to the vector database
-web3cli vdb-add-text "Smart contract security involves..." --name security-patterns --title "Security Best Practices"
-
 # Search the vector database
-web3cli vdb-search "your query here" --name <collection-name> -k 5
-```
+web3cli vdb-search "ERC721 royalties implementation" --name solidity -k 5
 
-## Example Workflow
+# Add documentation from predefined sources
+web3cli setup --max-pages 50
 
-```bash
-# Add Solidity documentation to a collection
-web3cli vdb-add-docs https://docs.soliditylang.org/ --name solidity --crawl
-
-# Search the collection
-web3cli vdb-search "how to handle errors in solidity" --name solidity
+# Initialize vector database (alias for backward compatibility)
+web3cli vector-db
 
 # Use vector search with generation
 web3cli generate "Create an NFT with royalties" --read-docs solidity
 ```
 
-## Setup Quick Documentation
+### Document Structure
 
-Run the setup command to quickly index documentation for common Web3 technologies:
+The vector database stores and returns documents with this structure:
 
-```bash
-web3cli setup --max-pages 50
+```typescript
+{
+  pageContent: "The document text content...",
+  metadata: {
+    source: "https://example.com/docs/page",
+    title: "Document Title",
+    url: "https://example.com/docs/page",
+    siteName: "Example Documentation",
+    author: "Example Author",
+    crawlTime: "2023-06-15T12:34:56Z"
+  }
+}
 ```
 
-This will create collections for Solidity, Ethers.js, Hardhat, and OpenZeppelin.
+## Design Tradeoffs
+
+### Model Choice
+- **GPT-4o** - Superior understanding of Solidity but higher cost
+- Security is prioritized over cost for critical smart contract generation
+- Lesser models used for non-critical tasks like search and documentation
+
+### Security vs. Speed
+- Security is prioritized with multiple agent reviews
+- Vector database provides security patterns for faster reference
+- Tradeoff favors security at the cost of generation time
+
+## Project Structure
+
+```
+web3cli/
+├── docs/                # Documentation
+├── scripts/             # Utility scripts
+├── src/                 # Source code
+│   ├── agents/          # Agent system components
+│   │   ├── coordinator.ts     # Agent orchestration
+│   │   ├── code-writer.ts     # Code generation
+│   │   ├── security-audit.ts  # Security auditing
+│   │   ├── linting.ts         # Code quality
+│   │   ├── functionality.ts   # Verify behavior
+│   │   ├── web-search.ts      # Web search
+│   │   └── vector-store.ts    # Documentation retrieval
+│   ├── cli/             # CLI interface
+│   │   └── commands/         # Command implementations
+│   ├── services/        # Core services
+│   │   ├── ai/              # AI model integration
+│   │   ├── config/          # Configuration
+│   │   ├── contract/        # Contract generation
+│   │   ├── search/          # Search services
+│   │   ├── ui/              # User interface helpers
+│   │   └── vector-db/       # Vector database
+│   └── utils/           # Shared utilities
+```
 
 ## Core Technologies
 
@@ -183,6 +233,14 @@ Web3CLI is built with the following key technologies:
 - **ethers.js**: Ethereum interaction library
 - **Solidity Compiler**: For validating contracts
 - **CAC**: Lightweight CLI framework
+
+## Future Plans
+
+1. **Formal Verification Integration** - Connect with formal verification tools for critical contracts
+2. **Gas Optimization Analysis** - Add detailed gas estimation and optimization suggestions
+3. **Custom Documentation Integration** - Allow developers to add proprietary documentation
+4. **Web Interface** - Develop a web-based UI for easier adoption
+5. **Expanded Chain Support** - Add support for additional EVM-compatible chains
 
 ## License
 

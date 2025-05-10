@@ -3,12 +3,37 @@
 # Default model to use for AI completions
 default_model = "gpt-4o-mini"
 
+# === OpenAI Configuration ===
 # OpenAI API key - replace with your actual key
 openai_api_key = "your-openai-api-key-here"
+# Optional: Custom OpenAI API URL (if using a proxy or compatible API)
+# openai_api_url = "https://your-custom-endpoint.com/v1"
 
+# === Gemini Configuration ===
+# Gemini API key - replace with your actual key
+gemini_api_key = "your-gemini-api-key-here"
+
+# === Anthropic Configuration ===
+# Anthropic API key for Claude models
+# anthropic_api_key = "your-anthropic-api-key-here"
+
+# === Groq Configuration ===
+# Groq API key for faster inference
+# groq_api_key = "your-groq-api-key-here" 
+
+# === Mistral Configuration ===
+# Mistral API key
+# mistral_api_key = "your-mistral-api-key-here"
+
+# === Ollama Configuration ===
+# Ollama host for local models (default: http://localhost:11434)
+# ollama_host = "http://localhost:11434"
+
+# === Blockchain Tools ===
 # Etherscan API key for fetching contract ABIs
 etherscan_api_key = "your-etherscan-api-key-here"
 
+# === Custom Commands ===
 # Optional: Configure custom commands
 [commands]
  # [commands.explain]
