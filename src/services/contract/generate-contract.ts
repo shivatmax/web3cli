@@ -59,8 +59,8 @@ export async function generateContract(
       if (docs.length > 0) {
         docsContext = [
           `docs:${options.readDocs}:`,
-          ...docs.map((d) => `"""
-${d.text}
+          ...docs.map((d: { text?: string, pageContent?: string }) => `"""
+${d.text || d.pageContent || ''}
 """`),
         ];
       }
@@ -147,6 +147,11 @@ ${options.hardhat ? "After the contract, include a Hardhat test file that thorou
     if (options.output) {
       // Strip markdown formatting before saving
       const cleanContent = stripMarkdownCodeBlocks(content);
+      
+      // Create directory if it doesn't exist
+      const outputDir = path.dirname(options.output);
+      fs.mkdirSync(outputDir, { recursive: true });
+      
       fs.writeFileSync(options.output, cleanContent);
       console.log(`\n✅ Contract saved to ${options.output}`);
 

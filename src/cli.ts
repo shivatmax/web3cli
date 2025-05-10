@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 import process from "node:process"
-import { cac, Command as CliCommand } from "cac"
-import { bold, green, underline } from "colorette"
+import { cac, Command as CliCommand, CAC } from "cac"
+import { bold, green, underline, red, yellow } from "colorette"
 import { getAllModels } from "./services/ai/models"
 import updateNotifier from "update-notifier"
 import { ask } from "./services/ai/ask"
 import { getAllCommands, getPrompt } from "./services/ai/ai-command"
 import { readPipeInput } from "./utils/tty"
-import { CliError } from "./utils/error"
+import { CliError, ValidationError, CommandNotFoundError, showCommandNotFoundMessage } from "./utils/error"
 import { loadConfig } from "./services/config/config"
 import { APICallError } from "ai"
 import { generateContract } from "./services/contract/generate-contract"
@@ -27,6 +27,41 @@ if (typeof PKG_NAME === "string" && typeof PKG_VERSION === "string") {
   }).notify({
     isGlobal: true,
   })
+}
+
+/**
+ * Shows similar commands when an unknown command is used
+ * @param cli - CAC instance
+ * @param unknownCommand - The unknown command entered by user
+ */
+function showSimilarCommands(cli: CAC, unknownCommand: string): string[] {
+  const availableCommands = Array.from(cli.commands.keys())
+  const similarCommands = availableCommands.filter(cmd => {
+    // Simple similarity check - commands that start with the same letter or contain the entered text
+    return cmd.toString().startsWith(unknownCommand[0]) || cmd.toString().includes(unknownCommand)
+  }).slice(0, 3) // Limit to 3 suggestions
+  
+  return similarCommands.map(cmd => cmd.toString())
+}
+
+/**
+ * Shows helpful error message for unknown option
+ * @param command - The command that was run
+ * @param unknownOption - The unknown option
+ * @returns Array of close option matches
+ */
+function showSimilarOptions(command: CliCommand, unknownOption: string): string[] {
+  // Extract available options for this command
+  const availableOptions = command.options.map(option => option.rawName)
+  
+  // Find similar options using simple matching
+  const similarOptions = availableOptions.filter(opt => {
+    const cleanOpt = opt.replace(/^-+/, '') // Remove leading dashes
+    const cleanUnknown = unknownOption.replace(/^-+/, '')
+    return cleanOpt.startsWith(cleanUnknown[0]) || cleanOpt.includes(cleanUnknown)
+  }).slice(0, 3) // Limit to 3 suggestions
+  
+  return similarOptions
 }
 
 function applyCommonFlags(command: CliCommand) {
@@ -64,6 +99,7 @@ async function main() {
     .option("-o, --output <filename>", "Output generated contract to a file")
     .option("--hardhat", "Include Hardhat test file generation")
     .option("--agent", "Use hierarchical multi-agent mode (experimental)")
+    .option("--max-lines <number>", "Maximum lines in the generated contract")
     .action(async (prompt, flags) => {
       const pipeInput = await readPipeInput()
       if (flags.agent) {
@@ -140,7 +176,7 @@ async function main() {
   // Vector DB commands for documentation
   cli
     .command("add-docs <url>", "Add docs from URL to vector DB")
-    .option("--name <name>", "Collection name for the docs", { default: "solidity" })
+    .option("--name <n>", "Collection name for the docs", { default: "solidity" })
     .option("--crawl", "Recursively crawl links under the same domain")
     .option("--max-pages <number>", "Maximum pages to crawl (default 30)")
     .action(async (url, flags) => {
@@ -206,27 +242,141 @@ async function main() {
     console.log('\nExample: web3cli vector-db-search "my query" --name my-collection');
   });
 
+  // Add help command explicitly
+  cli.command('help [command]', 'Display help for a command').action((command) => {
+    if (command) {
+      const cmd = cli.commands.find(c => c.name === command || c.name.includes(command))
+      if (cmd) {
+        console.log(`Command: ${cmd.name}`)
+        if (cmd.description) console.log(`Description: ${cmd.description}`)
+        console.log('\nOptions:')
+        cmd.options.forEach(opt => {
+          console.log(`  ${opt.rawName}` + (opt.description ? `\t${opt.description}` : ''))
+        })
+      } else {
+        console.log(`Command '${command}' not found.`)
+        
+        // Show similar commands
+        const similarCommands = showSimilarCommands(cli, command)
+        if (similarCommands.length > 0) {
+          console.log(yellow(`\nDid you mean one of these?`))
+          similarCommands.forEach(cmd => console.log(yellow(`  ${cmd}`)))
+        }
+        
+        console.log(`\nRun 'web3cli help' to see all available commands.`)
+      }
+    } else {
+      console.log(bold('web3cli - Command-line AI assistant for Web3 developers\n'))
+      console.log('Usage:')
+      console.log('  $ web3cli <command> [options]\n')
+      console.log('Available Commands:')
+      
+      // Get all commands
+      cli.commands.forEach(cmd => {
+        if (cmd.name && cmd.description) {
+          console.log(`  ${cmd.name.padEnd(20)} ${cmd.description}`)
+        }
+      })
+      
+      console.log('\nFor more info, run any command with the `--help` flag')
+      console.log('  $ web3cli generate --help')
+    }
+  })
+
+  // Handle unknown command with command:*
+  cli.on('command:*', async () => {
+    console.error(red(`Error: Unknown command '${cli.args.join(' ')}'`))
+    
+    const unknownCommand = cli.args[0]
+    // Show similar commands
+    const availableCommands = Array.from(cli.commands.keys())
+    const similarCommands = availableCommands
+      .filter(cmd => cmd.toString().startsWith(unknownCommand[0]) || 
+                    cmd.toString().includes(unknownCommand))
+      .slice(0, 3)
+      .map(cmd => cmd.toString())
+    
+    if (similarCommands.length > 0) {
+      console.log(yellow(`\nDid you mean one of these?`))
+      similarCommands.forEach(cmd => console.log(yellow(`  ${cmd}`)))
+    }
+    
+    console.log(`\nRun ${bold('web3cli --help')} to see all available commands.`)
+    process.exit(1)
+  })
+
   cli.help()
   cli.version(PKG_VERSION || "0.0.0")
 
   try {
     cli.parse(process.argv, { run: false })
+    
+    // Check for unknown command
+    const matchedCommand = cli.matchedCommand
+    if (!matchedCommand && cli.args.length > 0 && !cli.args.join(' ').trim().startsWith('-')) {
+      const unknownCommand = cli.args[0]
+      const availableCommands = cli.commands.map(cmd => cmd.name).filter(Boolean)
+      showCommandNotFoundMessage(unknownCommand, availableCommands)
+      process.exit(1)
+    }
+    
     await cli.runMatchedCommand()
-  } catch (error) {
-    if (error instanceof CliError) {
-      console.error(error.message)
+  } catch (error: any) {
+    if (error.name === 'CACError' && error.message && error.message.includes('Unknown option')) {
+      // Extract the unknown option name
+      const match = error.message.match(/Unknown option `([^`]+)`/)
+      const unknownOption = match ? match[1] : ''
+      
+      console.error(red(`Error: ${error.message}`))
+      
+      // Find the command that was being executed
+      const command = cli.matchedCommand
+      if (command && unknownOption) {
+        // Show similar options
+        const similarOptions = showSimilarOptions(command, unknownOption)
+        if (similarOptions.length > 0) {
+          console.log(yellow(`\nDid you mean one of these?`))
+          similarOptions.forEach(opt => console.log(yellow(`  ${opt}`)))
+        }
+        
+        // Show command help
+        console.log(`\nAvailable options for '${command.name || "command"}':\n`)
+        command.options.forEach(opt => {
+          console.log(`  ${opt.rawName}` + (opt.description ? `\t${opt.description}` : ''))
+        })
+      }
+      
+      process.exit(1)
+    } else if (error instanceof CommandNotFoundError) {
+      // Use our helper for unknown commands
+      const availableCommands = cli.commands.map(cmd => cmd.name).filter(Boolean)
+      showCommandNotFoundMessage(error.commandName, availableCommands)
+      process.exit(1)
+    } else if (error instanceof CliError) {
+      console.error(red(`Error: ${error.message}`))
       process.exit(1)
     } else if (error instanceof APICallError) {
-      console.error("API Error:", error.message)
+      console.error(red(`API Error: ${error.message}`))
+      process.exit(1)
+    } else if (error instanceof ValidationError) {
+      console.error(red(`Validation Error: ${error.message}`))
       process.exit(1)
     } else {
-      console.error(error)
+      console.error(red(`Unexpected error: ${error.message || error}`))
+      if (process.env.DEBUG) {
+        console.error(error)
+      } else {
+        console.log(`Run with DEBUG=true for more details.`)
+      }
       process.exit(1)
     }
   }
 }
 
 main().catch((error) => {
-  console.error(error)
+  console.error(red(`Fatal error: ${error.message || String(error)}`))
+  if (process.env.DEBUG) {
+    console.error(error)
+  }
   process.exit(1)
 })

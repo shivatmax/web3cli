@@ -1,6 +1,27 @@
 /**
  * Error classes for the application
  */
+import { bold, yellow, red } from 'colorette';
+
+/**
+ * Display a helpful message when a command is not found
+ * @param commandName The command that was not found
+ * @param availableCommands List of available commands
+ */
+export function showCommandNotFoundMessage(commandName: string, availableCommands: string[]): void {
+  console.error(red(`Error: Unknown command '${commandName}'`));
+  
+  const similarCommands = availableCommands
+    .filter(cmd => cmd.startsWith(commandName[0]) || cmd.includes(commandName))
+    .slice(0, 3);
+  
+  if (similarCommands.length > 0) {
+    console.log(yellow(`\nDid you mean one of these?`));
+    similarCommands.forEach(cmd => console.log(yellow(`  ${cmd}`)));
+  }
+  
+  console.log(`\nRun ${bold('web3cli --help')} to see all available commands.`);
+}
 
 /**
  * Base error class for CLI errors
@@ -60,4 +81,17 @@ export class ValidationError extends CliError {
     super(`Validation error: ${message}`);
     this.name = 'ValidationError';
   }
+}
+
+/**
+ * Error for when a command is not found
+ */
+export class CommandNotFoundError extends CliError {
+  constructor(commandName: string) {
+    super(`Unknown command: ${commandName}`);
+    this.name = 'CommandNotFoundError';
+    this.commandName = commandName;
+  }
+  
+  commandName: string;
 } 

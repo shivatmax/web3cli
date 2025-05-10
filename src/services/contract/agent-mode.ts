@@ -129,7 +129,7 @@ export async function runAgentMode(
               logAgentActivity(this, `Searching for: ${term}`, context);
               const docs = await db.similaritySearch(context.options.readDocs, term, 3);
               if (docs.length > 0) {
-                const results = docs.map(d => d.text).join("\n\n");
+                const results = docs.map(d => d.pageContent || '').join("\n\n");
                 context.vectorSearchResults.push(`Results for "${term}":\n${results}`);
                 logAgentActivity(this, `Found ${docs.length} relevant documents for "${term}"`, context);
               }

@@ -981,4 +981,15 @@ export class VectorDB {
       return 0;
     }
   }
+
+  /**
+   * Perform similarity search (alias to search method)
+   */
+  public async similaritySearch(
+    collectionName: string,
+    query: string,
+    k: number = 5
+  ): Promise<Document[]> {
+    return this.search(collectionName, query, k);
+  }
 } 
