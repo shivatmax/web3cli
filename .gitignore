@@ -45,6 +45,7 @@ tmp/
 *.tmp
 *.swp
 *.swo
+*.sample
 
 # Generated files
 schema.json

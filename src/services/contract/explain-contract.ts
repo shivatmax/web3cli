@@ -11,10 +11,8 @@ import { CliError } from "../../utils/error";
 import logUpdate from "log-update";
 import { renderMarkdown } from "../../utils/markdown";
 import { VectorDB } from "../vector-db/vector-db";
+import { CoreMessage } from "ai";
 import { notEmpty } from "../../utils/common";
-import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
-import { fetchContractData, formatContractData } from "./contract-fetcher";
-import { ethers } from "ethers";
 
 /**
  * Explain a smart contract by address or file path
@@ -29,14 +27,12 @@ export async function explainContract(
     network?: string;
     stream?: boolean;
     readDocs?: string;
-    output?: string;
   } = {}
 ) {
   // Check if source is a file path or contract address
   const isFile = source.endsWith(".sol") || fs.existsSync(source);
-  const isAddress = ethers.isAddress(source);
   
-  console.log(`Explaining ${isFile ? "contract file" : isAddress ? "deployed contract" : "contract source"}...`);
+  console.log(`Explaining ${isFile ? "contract file" : "deployed contract"}...`);
   
   // Load contract content
   let contractContent = "";
@@ -46,17 +42,10 @@ export async function explainContract(
     } catch (error) {
       throw new CliError(`Failed to read contract file: ${error}`);
     }
-  } else if (isAddress) {
-    try {
-      // Fetch contract data from the blockchain
-      const contractData = await fetchContractData(source, options.network || "sepolia");
-      contractContent = formatContractData(contractData);
-    } catch (error) {
-      throw new CliError(`Failed to fetch contract data: ${error instanceof Error ? error.message : String(error)}`);
-    }
   } else {
-    // Assume it's an inline contract source
-    contractContent = source;
+    // In a real implementation, this would fetch the contract bytecode and ABI from the blockchain
+    // For this example, we'll use a placeholder
+    contractContent = `// Contract would be fetched from ${options.network} network at address ${source}`;
   }
   
   const config = loadConfig();
@@ -96,7 +85,7 @@ ${contractContent}
     .filter(notEmpty)
     .join("\n");
   
-  const messages: ChatCompletionMessageParam[] = [
+  const messages: CoreMessage[] = [
     {
       role: "system",
       content: `You are an expert Solidity developer who specializes in analyzing and explaining smart contracts.
@@ -112,7 +101,7 @@ Provide a comprehensive explanation of the contract that includes:
 8. Best practices followed or violated
 
 Structure your response with clear headings and bullet points where appropriate.
-`
+`,
     },
     {
       role: "user",
@@ -121,7 +110,7 @@ Structure your response with clear headings and bullet points where appropriate.
         `TASK: Explain the following smart contract in detail:`,
       ]
         .filter(Boolean)
-        .join("\n\n")
+        .join("\n\n"),
     },
   ];
   
@@ -131,7 +120,10 @@ Structure your response with clear headings and bullet points where appropriate.
     if (options.stream !== false) {
       const stream = await openai.chat.completions.create({
         model: modelId,
-        messages,
+        messages: [
+          { role: "system", content: messages[0].content as string },
+          { role: "user", content: messages[1].content as string }
+        ],
         stream: true,
       });
       
@@ -144,17 +136,13 @@ Structure your response with clear headings and bullet points where appropriate.
     } else {
       const completion = await openai.chat.completions.create({
         model: modelId,
-        messages,
+        messages: [
+          { role: "system", content: messages[0].content as string },
+          { role: "user", content: messages[1].content as string }
+        ],
       });
       content = completion.choices[0].message.content || "";
       console.log(renderMarkdown(content));
-    }
-    
-    // Save output if specified
-    if (options.output) {
-      const outputPath = options.output.endsWith('.md') ? options.output : `${options.output}.md`;
-      fs.writeFileSync(outputPath, content);
-      console.log(`\n✅ Explanation saved to ${outputPath}`);
     }
     
     return { explanation: content };

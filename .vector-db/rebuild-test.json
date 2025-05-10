@@ -1,0 +1,38 @@
+[
+  {
+    "metadata": {
+      "source": "rebuild-test",
+      "title": "Smart Contract Definition",
+      "loc": {
+        "lines": {
+          "from": 2,
+          "to": 2
+        }
+      }
+    }
+  },
+  {
+    "metadata": {
+      "source": "rebuild-test",
+      "title": "Smart Contract Definition",
+      "loc": {
+        "lines": {
+          "from": 4,
+          "to": 7
+        }
+      }
+    }
+  },
+  {
+    "metadata": {
+      "source": "rebuild-test",
+      "title": "Smart Contract Definition",
+      "loc": {
+        "lines": {
+          "from": 7,
+          "to": 9
+        }
+      }
+    }
+  }
+]

@@ -13,8 +13,12 @@ import { APICallError } from "ai"
 import { generateContract } from "./services/contract/generate-contract"
 import { explainContract } from "./services/contract/explain-contract"
 import { runAgentMode } from "./services/contract/agent-mode"
-import { auditContract } from "./services/contract/audit-contract"
-import { processContractRequest } from "./services/contract/custom-request"
+import { 
+  explainContract as contractExplain, 
+  auditContract, 
+  customContractRequest 
+} from "./services/contract/contract-commands"
+import { registerVectorDBCommands } from "./cli/commands/vector-db"
 
 if (typeof PKG_NAME === "string" && typeof PKG_VERSION === "string") {
   updateNotifier({
@@ -81,55 +85,55 @@ async function main() {
       await explainContract(source, flags)
     })
 
-  // New contract command with subcommands
-  const contractCmd = cli
-    .command("contract <contractAddress|filePath>", "Work with smart contracts")
-    .option("-m, --model [model]", "Choose the AI model to use, omit value to select interactively")
-    .option("--network <network>", "Ethereum network (default: sepolia)", { default: "sepolia" })
-    .option("--no-stream", "Disable streaming output")
-    .option("--read-docs <n>", "Read indexed docs collection as context")
-    .option("-o, --output <filename>", "Output results to a file")
-    .action(async (source, flags) => {
-      // Default behavior when no subcommand is provided - explain the contract
-      await explainContract(source, flags)
-    })
-
-  // Contract audit command
+  // Contract commands
   cli
-    .command("contract audit <contractAddress|filePath>", "Audit a smart contract for security vulnerabilities")
+    .command("contract <source>", "Analyze a smart contract")
     .option("-m, --model [model]", "Choose the AI model to use, omit value to select interactively")
     .option("--network <network>", "Ethereum network (default: sepolia)", { default: "sepolia" })
+    .option("-o, --output", "Save results to output directory")
     .option("--no-stream", "Disable streaming output")
     .option("--read-docs <n>", "Read indexed docs collection as context")
-    .option("-o, --output <filename>", "Output results to a file")
-    .option("--fix", "Generate fixed code addressing the vulnerabilities")
-    .action(async (source, flags) => {
-      await auditContract(source, flags)
+    .action(async (source: string, flags: any) => {
+      // By default, the main contract command uses explain
+      await contractExplain(source, flags)
     })
-
+  
   // Contract explain command
   cli
-    .command("contract explain <contractAddress|filePath>", "Explain a smart contract in detail")
+    .command("contract:explain <source>", "Generate a technical explanation of a smart contract")
     .option("-m, --model [model]", "Choose the AI model to use, omit value to select interactively")
     .option("--network <network>", "Ethereum network (default: sepolia)", { default: "sepolia" })
+    .option("-o, --output", "Save results to output directory")
     .option("--no-stream", "Disable streaming output")
     .option("--read-docs <n>", "Read indexed docs collection as context")
-    .option("-o, --output <filename>", "Output results to a file")
-    .action(async (source, flags) => {
-      await explainContract(source, flags)
+    .action(async (source: string, flags: any) => {
+      await contractExplain(source, flags)
     })
-
-  // Custom contract request command
+  
+  // Contract audit command
   cli
-    .command("contract request <contractAddress|filePath> <customRequest>", "Make a custom request about a smart contract")
+    .command("contract:audit <source>", "Perform a security audit of a smart contract")
     .option("-m, --model [model]", "Choose the AI model to use, omit value to select interactively")
     .option("--network <network>", "Ethereum network (default: sepolia)", { default: "sepolia" })
+    .option("-o, --output", "Save results to output directory")
     .option("--no-stream", "Disable streaming output")
     .option("--read-docs <n>", "Read indexed docs collection as context")
-    .option("-o, --output <filename>", "Output results to a file")
-    .option("--web", "Enable web search for additional context")
-    .action(async (source, request, flags) => {
-      await processContractRequest(source, request, flags)
+    .action(async (source: string, flags: any) => {
+      await auditContract(source, flags)
+    })
+  
+  // Contract custom command
+  cli
+    .command("contract:custom <source> [...query]", "Ask a custom question about a smart contract")
+    .option("-m, --model [model]", "Choose the AI model to use, omit value to select interactively")
+    .option("--network <network>", "Ethereum network (default: sepolia)", { default: "sepolia" })
+    .option("-o, --output", "Save results to output directory")
+    .option("--no-stream", "Disable streaming output")
+    .option("--read-docs <n>", "Read indexed docs collection as context")
+    .action(async (source: string, query: string[], flags: any) => {
+      const pipeInput = await readPipeInput()
+      const queryString = query.join(" ") || pipeInput || "Explain this contract in detail"
+      await customContractRequest(source, queryString, flags)
     })
 
   // List available models
@@ -163,26 +167,54 @@ async function main() {
 
   cli
     .command("setup", "Set up documentation for Web3 development")
-    .action(async () => {
+    .option('--max-pages <number>', 'Maximum pages to crawl per source', { default: 50 })
+    .action(async (options: any) => {
       const { VectorDB } = await import("./services/vector-db/vector-db")
       const vdb = new VectorDB()
+      const maxPages = parseInt(options.maxPages)
       
       console.log("Setting up documentation for Web3 development...")
+      console.log(`Maximum pages per source: ${maxPages}`)
       
-      console.log("1/3: Adding Solidity documentation...")
+      console.log("1/4: Adding Solidity documentation...")
       await vdb.addDocs("solidity", "https://docs.soliditylang.org/", 
-        { crawl: true, maxPages: 50 })
+        { crawl: true, maxPages: maxPages })
       
-      console.log("2/3: Adding Ethers.js documentation...")
+      console.log("2/4: Adding Ethers.js documentation...")
       await vdb.addDocs("ethers", "https://docs.ethers.org/v6/", 
-        { crawl: true, maxPages: 50 })
+        { crawl: true, maxPages: maxPages })
       
-      console.log("3/3: Adding Hardhat documentation...")
+      console.log("3/4: Adding Hardhat documentation...")
       await vdb.addDocs("hardhat", "https://hardhat.org/hardhat-runner/docs/", 
-        { crawl: true, maxPages: 50 })
+        { crawl: true, maxPages: maxPages })
+      
+      console.log("4/4: Adding OpenZeppelin documentation...")
+      await vdb.addDocs("openzeppelin", "https://docs.openzeppelin.com/contracts/", 
+        { crawl: true, maxPages: maxPages })
         
-      console.log("Setup complete! You can now use --read-docs with solidity, ethers, or hardhat")
+      console.log("Setup complete! You can now use --read-docs with solidity, ethers, hardhat, or openzeppelin")
     })
+
+  // Register vector database commands
+  registerVectorDBCommands(cli)
+  
+  // Simple test command
+  cli
+    .command('vdb-test', 'Simple test command for vector database')
+    .action(() => {
+      console.log('Vector database test command executed successfully!')
+      console.log('This command is working properly.')
+    })
+
+  // Create backward compatibility aliases for vector-db commands
+  cli.command('vector-db', 'Vector database commands (alias to vector-db-* commands)').action(() => {
+    console.log('Vector Database commands are now available as:');
+    console.log('  vector-db-add-docs  - Add documents from a URL');
+    console.log('  vector-db-add-file  - Add a file to the database');
+    console.log('  vector-db-search    - Search the database');
+    console.log('  vector-db-list      - List all collections');
+    console.log('\nExample: web3cli vector-db-search "my query" --name my-collection');
+  });
 
   cli.help()
   cli.version(PKG_VERSION || "0.0.0")

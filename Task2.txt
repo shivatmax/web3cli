@@ -30,10 +30,4 @@ Permissions
 Security patterns
 
 Additional Requirement:
-Use a blockchain library ethers.js to fetch the contract ABI or bytecode.
-
-
-# gas optim
-# with security
-# upgradable contract or not - ask Users (2 contract, one proxy pyment contract will be same, one main feature contract will change ) Type=> -UUPS or -Transparent
-# 
+Use a blockchain library (e.g., web3.py, ethers.js) to fetch the contract ABI or bytecode.

@@ -15,4 +15,4 @@ export * from './web-search';
 export * from './vector-store';
 
 // Re-export agent coordinator for simplified imports
-export { CoordinatorAgent } from './coordinator'; 
+// export { CoordinatorAgent } from './coordinator'; 

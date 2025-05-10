@@ -5,6 +5,7 @@
  */
 import process from "node:process"
 import { CoreMessage } from "ai"
+import { ChatCompletionMessageParam } from "openai/resources/chat/completions"
 import { loadFiles, notEmpty } from "../../utils/common"
 import { loadConfig } from "../config/config"
 import {
@@ -20,6 +21,7 @@ import { fetchUrl } from "../../utils/fetch-url"
 import logUpdate from "log-update"
 import { renderMarkdown } from "../../utils/markdown"
 import { VectorDB } from "../vector-db/vector-db"
+import { processVectorDBReadRequest, augmentMessagesWithRAG } from "./rag-utils"
 
 // Function to replace debug module
 const debug = (...args: any[]) => {
@@ -134,18 +136,19 @@ export async function ask(
   let docsContext: string[] = []
   if (options.readDocs) {
     try {
-      const vdb = new VectorDB()
-      const docs = await vdb.similaritySearch(options.readDocs, prompt, 8)
-      if (docs.length > 0) {
+      // Get relevant content from the vector DB using our new utility
+      const docsContent = await processVectorDBReadRequest(prompt, options.readDocs, 8)
+      if (docsContent) {
         docsContext = [
           `docs:${options.readDocs}:`,
-          ...docs.map((d) => `"""
-${d.text}
-"""`),
+          `"""
+${docsContent}
+"""`
         ]
       }
     } catch (e) {
       // ignore if vector db fails
+      console.warn("Warning: Failed to retrieve docs from vector DB", e)
     }
   }
 
@@ -191,19 +194,43 @@ ${content.content}
   try {
     let content = ""
     
+    // Prepare base messages for OpenAI
+    let messages: ChatCompletionMessageParam[] = [
+      {
+        role: "system",
+        content: systemMessage,
+      },
+      {
+        role: "user",
+        content: userMessage,
+      }
+    ]
+    
+    // Augment with RAG if readDocs is provided
+    if (options.readDocs) {
+      console.log(`Using RAG with collection: ${options.readDocs}`);
+      
+      try {
+        // Get relevant content directly rather than using the augmentation utility
+        const docsContent = await processVectorDBReadRequest(prompt, options.readDocs, 5);
+        
+        if (docsContent) {
+          // Add the content to the user message
+          messages[1] = {
+            role: "user",
+            content: `${userMessage}\n\nHere's some relevant information to help you answer:\n\n${docsContent}`
+          };
+          console.log("✅ Context from vector database added to prompt");
+        }
+      } catch (error) {
+        console.warn("Warning: Failed to augment messages with RAG", error);
+      }
+    }
+    
     if (options.stream !== false) {
       const stream = await openai.chat.completions.create({
         model: realModelId,
-        messages: [
-          {
-            role: "system",
-            content: systemMessage,
-          },
-          {
-            role: "user",
-            content: userMessage,
-          }
-        ],
+        messages,
         stream: true,
       });
 
@@ -217,16 +244,7 @@ ${content.content}
     } else {
       const completion = await openai.chat.completions.create({
         model: realModelId,
-        messages: [
-          {
-            role: "system",
-            content: systemMessage,
-          },
-          {
-            role: "user",
-            content: userMessage,
-          }
-        ],
+        messages,
       });
       
       content = completion.choices[0].message.content || "";

@@ -8,7 +8,6 @@ Generate secure Solidity smart contracts from natural language using AI.
 - **Security First**: Built-in guardrails and security best practices
 - **Documentation**: Automatic security considerations and explanations
 - **Agent Mode**: Hierarchical multi-agent system for enhanced security and quality (NEW!)
-- **Blockchain Integration**: Uses ethers.js to fetch contract data from deployed addresses (NEW!)
 
 ## Installation
 
@@ -29,7 +28,7 @@ Create a `~/.config/web3cli/config.json` file:
 
 Or set environment variables:
 - `OPENAI_API_KEY`
-- `ETHERSCAN_API_KEY` (needed for verified contract source code retrieval)
+- `ETHERSCAN_API_KEY` (optional, for fetching contract ABIs)
 
 ## Usage
 
@@ -37,41 +36,6 @@ Generate a smart contract from natural language:
 
 ```bash
 web3cli generate "Create an ERC-20 token with minting restricted to addresses in an allowlist" --output Token.sol
-```
-
-Explain an existing smart contract:
-
-```bash
-web3cli explain 0x1234567890123456789012345678901234567890 --network sepolia
-# or
-web3cli explain MyContract.sol
-```
-
-When analyzing on-chain contracts, the tool will:
-- Fetch the contract bytecode using ethers.js
-- Retrieve the contract ABI and source code if verified on Etherscan
-- Reconstruct the contract interface from the ABI when source code is unavailable
-- Work with multiple networks (sepolia, goerli, mainnet)
-
-### Contract Commands (New)
-
-Work with smart contracts using specialized commands:
-
-```bash
-# Explain a contract
-web3cli contract MyContract.sol
-# or
-web3cli contract explain MyContract.sol
-
-# Audit a contract for security vulnerabilities
-web3cli contract audit MyContract.sol --output audit-report.md
-
-# Audit and get fixed code
-web3cli contract audit MyContract.sol --fix --output audit-report.md
-
-# Make custom requests about a contract
-web3cli contract request MyContract.sol "Explain the gas optimization opportunities"
-web3cli contract request MyContract.sol "What's the upgrade path for this contract?" --web
 ```
 
 ### Agent Mode (New)
@@ -95,7 +59,6 @@ See [Agent Mode Documentation](docs/agent-mode.md) for more details.
 
 ## Options
 
-### Generate Command
 - `--model <model>`: Specify the model to use (default: gpt-4o)
 - `--output <file>`: Output file for the generated contract
 - `--hardhat`: Generate Hardhat test file
@@ -104,21 +67,6 @@ See [Agent Mode Documentation](docs/agent-mode.md) for more details.
 - `--url <urls...>`: URLs to fetch as context
 - `--search`: Enable web search for context
 - `--read-docs <collection>`: Read from vector DB docs collection
-
-### Contract Commands
-
-#### Common Options
-- `--model <model>`: Specify the model to use (default: gpt-4o)
-- `--network <network>`: Ethereum network for on-chain contracts (default: sepolia)
-- `--output <file>`: Output file for results
-- `--read-docs <collection>`: Read from vector DB docs collection
-- `--no-stream`: Disable streaming output
-
-#### Audit Options
-- `--fix`: Generate fixed code addressing the vulnerabilities
-
-#### Request Options
-- `--web`: Enable web search for additional context
 
 ## Design Considerations
 
@@ -175,3 +123,144 @@ web3cli/
 ```
 
 This structure organizes the codebase for maintainability and future growth, with clear separation of concerns and logical grouping of related functionality.
+
+# Vector Database for Web3CLI
+
+We've added a local vector database to the web3cli tool that allows you to store and search documents using semantic similarity with OpenAI embeddings. This implementation provides the following features:
+
+## Features
+
+- Store and retrieve documents using vector embeddings
+- Add content from URLs with automatic text extraction
+- Recursively crawl websites to build knowledge bases
+- Add local files to collections
+- Perform semantic search across your document collections
+- Integrate search results with AI queries using RAG (Retrieval Augmented Generation)
+
+## Commands
+
+### Add Documents from URL
+
+```bash
+web3cli vector-db add-docs https://docs.example.com --name my-collection --crawl --max-pages 30
+```
+
+This command fetches the content from the URL, extracts meaningful text content, splits it into chunks, and stores it in the vector database.
+
+### Add File
+
+```bash
+web3cli vector-db add-file ./my-document.md --name my-collection
+```
+
+Add local files to your vector database for later retrieval.
+
+### Search
+
+```bash
+web3cli vector-db search "how does staking work" --name solidity
+```
+
+Perform a semantic search across your stored documents to find the most relevant content.
+
+### List Collections
+
+```bash
+web3cli vector-db list
+```
+
+Display all available collections in your vector database.
+
+## Setup Documentation
+
+To quickly set up a collection of Web3 documentation:
+
+```bash
+web3cli setup --max-pages 50
+```
+
+This will add documentation for Solidity, Ethers.js, Hardhat, and OpenZeppelin.
+
+## Using Vector Search in Queries
+
+When asking questions with web3cli, you can use the `--read-docs` flag to incorporate relevant information from your vector database:
+
+```bash
+web3cli "How do I implement an ERC-721 token?" --read-docs solidity
+```
+
+This retrieves relevant information about ERC-721 from your Solidity documentation collection and includes it in the context for the AI model.
+
+## Implementation Details
+
+The vector database is implemented using:
+- **OpenAI Embeddings**: To convert text into vector representations
+- **LangChain's MemoryVectorStore**: For local in-memory storage with persistence to disk
+- **Cheerio**: To parse and extract text content from HTML documents
+- **RecursiveCharacterTextSplitter**: To chunk documents into manageable pieces
+
+For more details, see the [Vector Database Documentation](docs/vector-db.md).
+
+# Vector Database Usage
+
+The Web3CLI includes a vector database for storing, indexing, and searching documents. This is useful for:
+
+- Storing documentation for quick reference
+- Creating knowledge bases for AI queries
+- Building semantic search for your project's documents
+
+### Vector Database Commands
+
+```bash
+# List all collections in the vector database
+web3cli vdb-list
+
+# Add documents from a URL to the vector database
+web3cli vdb-add-docs <url> --name <collection-name> --crawl --max-pages 50
+
+# Note: There is a maximum limit of 30 pages when crawling websites for safety and performance reasons
+
+# Add a file to the vector database
+web3cli vdb-add-file <file-path> --name <collection-name> --title "Document Title"
+
+# Search the vector database
+web3cli vdb-search "your query here" --name <collection-name> -k 5
+```
+
+### Examples
+
+```bash
+# Add Solidity documentation to a collection called "solidity"
+web3cli vdb-add-docs https://docs.soliditylang.org/ --name solidity --crawl
+
+# Search your Solidity collection
+web3cli vdb-search "how to handle errors in solidity" --name solidity
+
+# Add a local smart contract to your collection
+web3cli vdb-add-file ./contracts/MyContract.sol --name my-project
+```
+
+## Configuration
+
+Create a `web3cli.toml` file in your project directory with the following:
+
+```toml
+#:schema ./schema.json
+default_model = "gpt-4o-mini" # or another model
+openai_api_key = "your-openai-api-key"
+etherscan_api_key = "your-etherscan-api-key" # optional
+```
+
+## Setup Quick Documentation
+
+Run the setup command to quickly index documentation for common Web3 technologies:
+
+```bash
+web3cli setup --max-pages 50
+```
+
+This will create the following collections:
+- solidity
+- ethers
+- hardhat
+- openzeppelin
