@@ -75,16 +75,6 @@ async function main() {
     })
 
   // Task 2: Explain smart contract
-  cli
-    .command("explain <contractAddress|filePath>", "Explain a smart contract")
-    .option("-m, --model [model]", "Choose the AI model to use, omit value to select interactively")
-    .option("--network <network>", "Ethereum network (default: sepolia)", { default: "sepolia" })
-    .option("--no-stream", "Disable streaming output")
-    .option("--read-docs <n>", "Read indexed docs collection as context")
-    .action(async (source, flags) => {
-      await explainContract(source, flags)
-    })
-
   // Contract commands
   cli
     .command("contract <source>", "Analyze a smart contract")

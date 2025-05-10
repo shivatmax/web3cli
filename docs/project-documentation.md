@@ -107,30 +107,58 @@ This collaborative approach results in higher quality, more secure smart contrac
 
 ## Usage Examples
 
+### General Web3 Development Questions
+
+```bash
+# Ask a general Web3 development question
+web3cli "What is the difference between ERC-20 and ERC-721?"
+
+# Ask with web search enabled
+web3cli "What is the current gas cost for token transfers?" --search
+
+# Ask with specific model
+web3cli "Explain the EIP-2981 royalty standard" --model gpt-4o
+
+# List available models
+web3cli list
+```
+
 ### Task 1: Natural Language to Smart Contract
 
 ```bash
 # Generate a secure ERC-20 token with allowlist
-web3cli generate "Create an ERC-20 token with minting restricted to addresses in an allowlist" --output Token.sol
+web3cli generate "Create an ERC-20 token with minting restricted to addresses in an allowlist" --output Token.sol --no-stream
 
 # Generate with agent mode for enhanced security
-web3cli generate "Create an ERC-20 token with minting restricted to addresses in an allowlist" --agent --output Token.sol
+web3cli generate "Create an ERC-20 token with minting restricted to addresses in an allowlist" --agent --output Token.sol --no-stream
 
 # Generate with Hardhat tests
-web3cli generate "Create an NFT collection with royalties" --hardhat --output NFTCollection.sol
+web3cli generate "Create an NFT collection with royalties" --hardhat --output NFTCollection.sol --no-stream
+
+# Generate with web search for security best practices
+web3cli generate "Create a vesting contract" --search --no-stream
+
+# Generate with vector DB context
+web3cli generate "Create an NFT with royalties" --read-docs solidity
 ```
 
 ### Task 2: Smart Contract Explainability
 
 ```bash
-# Analyze a contract by address (Sepolia testnet)
-web3cli explain 0x1234567890123456789012345678901234567890
+# Analyze a contract by address (Mainnet)
+web3cli contract 0xdac17f958d2ee523a2206206994597c13d831ec7 --network mainnet -o
 
-# Analyze raw Solidity code
-web3cli explain --file MyContract.sol
+# Analyze a Solidity file
+web3cli contract --file MyContract.sol --no-stream
 
-# Analyze with additional security focus
-web3cli explain 0x1234567890123456789012345678901234567890 --security-focus
+# Explain a Solidity file 
+web3cli contract:explain --file MyContract.sol --no-stream
+
+# Audit a contract
+web3cli contract:audit 0xdac17f958d2ee523a2206206994597c13d831ec7 --network mainnet -o
+
+# Ask custom questions about a contract
+web3cli contract:custom 0xdac17f958d2ee523a2206206994597c13d831ec7 "What security patterns does this contract implement?" --network mainnet
 ```
 
 ### Vector Database Commands
@@ -148,8 +176,11 @@ web3cli vdb-add-file <file-path> --name <collection-name> --title "Document Titl
 # Search the vector database
 web3cli vdb-search "ERC721 royalties implementation" --name solidity -k 5
 
-# Add text directly to the vector database
-web3cli vdb-add-text "Smart contract security involves..." --name security-patterns --title "Security Best Practices"
+# Add documentation from predefined sources
+web3cli setup --max-pages 50
+
+# Initialize vector database (alias for backward compatibility)
+web3cli vector-db
 
 # Use vector search with generation
 web3cli generate "Create an NFT with royalties" --read-docs solidity
