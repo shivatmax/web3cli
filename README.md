@@ -13,6 +13,24 @@ The tool uses advanced AI models with specialized guardrails to ensure secure co
 
 ## Installation
 
+### NPM Package
+
+The easiest way to install Web3CLI is via npm:
+
+```bash
+npm install -g @web3ai/cli
+```
+
+Or with pnpm:
+
+```bash
+pnpm add -g @web3ai/cli
+```
+
+### Manual Installation
+
+If you prefer to install from source:
+
 ```bash
 git clone https://github.com/shivatmax/web3cli.git
 ```

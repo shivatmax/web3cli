@@ -1,0 +1,44 @@
+# Development files
+.git
+.github
+.vscode
+.editorconfig
+.gitignore
+.prettierrc
+tsconfig.json
+tsup.config.ts
+.eslintrc.js
+.prettier*
+.npmrc
+
+# Scripts and docs
+scripts/
+docs/
+
+# Source code (since we're distributing compiled code)
+src/
+
+# Test files
+test/
+*.test.ts
+*.spec.ts
+
+# Other non-essential files
+.vector-db/
+output/
+node_modules/
+examples/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-store/
+
+# Example files
+web3cli.example.toml
+terminal-ai.toml
+
+# Include certain files explicitly
+!dist/
+!schema.json 
