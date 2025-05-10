@@ -82,6 +82,10 @@ export async function generateContract(
   
   // Save the contract to a file if requested
   if (options.output && code) {
+    // Create the output directory if it doesn't exist
+    const outputDir = path.dirname(options.output);
+    fs.mkdirSync(outputDir, { recursive: true });
+    
     fs.writeFileSync(options.output, code);
     console.log(`✅ Contract saved to ${options.output}`);
     

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import process from "node:process"
 import { cac, Command as CliCommand, CAC } from "cac"
-import { bold, green, underline, red, yellow } from "colorette"
+import { bold, green, underline, red, yellow, blue } from "colorette"
 import { getAllModels } from "./services/ai/models"
 import updateNotifier from "update-notifier"
 import { ask } from "./services/ai/ask"
@@ -19,6 +19,7 @@ import {
   customContractRequest 
 } from "./services/contract/contract-commands"
 import { registerVectorDBCommands } from "./cli/commands/vector-db"
+import { registerContractCommand } from "./cli/commands/contract"
 
 if (typeof PKG_NAME === "string" && typeof PKG_VERSION === "string") {
   updateNotifier({
@@ -75,6 +76,52 @@ function applyCommonFlags(command: CliCommand) {
   return command
 }
 
+/**
+ * Global error handler for various error types with helpful messages
+ * @param error Error that occurred 
+ * @param exit Whether to exit the process
+ */
+function handleGlobalError(error: any, exit: boolean = true): void {
+  const githubIssueUrl = "https://github.com/shivatmax/web3cli/issues/new";
+  
+  console.error("");
+  
+  if (error.code === 'ENOENT' && error.syscall === 'mkdir') {
+    console.error(red(`Error creating directory: ${error.path}`));
+    console.error(yellow("Solution: Check write permissions or create parent directories manually"));
+  } else if (error.code === 'EACCES') {
+    console.error(red(`Permission denied: ${error.path}`));
+    console.error(yellow("Solution: Check file/directory permissions or run with elevated privileges"));
+  } else if (error instanceof CliError) {
+    console.error(red(`Command error: ${error.message}`));
+  } else if (error instanceof APICallError) {
+    console.error(red(`API error: ${error.message}`));
+    console.error(yellow("Solution: Check your API keys and network connection"));
+  } else if (error instanceof ValidationError) {
+    console.error(red(`Validation error: ${error.message}`));
+  } else if (error.name === 'CACError') {
+    console.error(red(`Command error: ${error.message}`));
+  } else {
+    console.error(red(`Unexpected error: ${error.message || String(error)}`));
+  }
+  
+  // Show detailed information in debug mode
+  if (process.env.DEBUG) {
+    console.error("\nDetailed error information:");
+    console.error(error);
+  } else {
+    console.error(yellow("\nFor detailed information, run with DEBUG=true"));
+  }
+  
+  // Suggest reporting the issue
+  console.error(blue(`\nPlease report this issue on GitHub: ${githubIssueUrl}`));
+  console.error(blue("Include the error message above and steps to reproduce the problem"));
+  
+  if (exit) {
+    process.exit(1);
+  }
+}
+
 async function main() {
   const cli = cac("web3cli")
   const config = loadConfig()
@@ -111,57 +158,11 @@ async function main() {
     })
 
   // Task 2: Explain smart contract
-  // Contract commands
-  cli
-    .command("contract <source>", "Analyze a smart contract")
-    .option("-m, --model [model]", "Choose the AI model to use, omit value to select interactively")
-    .option("--network <network>", "Ethereum network (default: sepolia)", { default: "sepolia" })
-    .option("-o, --output", "Save results to output directory")
-    .option("--no-stream", "Disable streaming output")
-    .option("--read-docs <n>", "Read indexed docs collection as context")
-    .action(async (source: string, flags: any) => {
-      // By default, the main contract command uses explain
-      await contractExplain(source, flags)
-    })
+  // Contract commands - using the modular command registration
+  registerContractCommand(cli)
   
-  // Contract explain command
-  cli
-    .command("contract:explain <source>", "Generate a technical explanation of a smart contract")
-    .option("-m, --model [model]", "Choose the AI model to use, omit value to select interactively")
-    .option("--network <network>", "Ethereum network (default: sepolia)", { default: "sepolia" })
-    .option("-o, --output", "Save results to output directory")
-    .option("--no-stream", "Disable streaming output")
-    .option("--read-docs <n>", "Read indexed docs collection as context")
-    .action(async (source: string, flags: any) => {
-      await contractExplain(source, flags)
-    })
+  // Legacy contract commands are now handled in registerContractCommand
   
-  // Contract audit command
-  cli
-    .command("contract:audit <source>", "Perform a security audit of a smart contract")
-    .option("-m, --model [model]", "Choose the AI model to use, omit value to select interactively")
-    .option("--network <network>", "Ethereum network (default: sepolia)", { default: "sepolia" })
-    .option("-o, --output", "Save results to output directory")
-    .option("--no-stream", "Disable streaming output")
-    .option("--read-docs <n>", "Read indexed docs collection as context")
-    .action(async (source: string, flags: any) => {
-      await auditContract(source, flags)
-    })
-  
-  // Contract custom command
-  cli
-    .command("contract:custom <source> [...query]", "Ask a custom question about a smart contract")
-    .option("-m, --model [model]", "Choose the AI model to use, omit value to select interactively")
-    .option("--network <network>", "Ethereum network (default: sepolia)", { default: "sepolia" })
-    .option("-o, --output", "Save results to output directory")
-    .option("--no-stream", "Disable streaming output")
-    .option("--read-docs <n>", "Read indexed docs collection as context")
-    .action(async (source: string, query: string[], flags: any) => {
-      const pipeInput = await readPipeInput()
-      const queryString = query.join(" ") || pipeInput || "Explain this contract in detail"
-      await customContractRequest(source, queryString, flags)
-    })
-
   // List available models
   cli
     .command("list", "List available models")
@@ -352,31 +353,27 @@ async function main() {
       const availableCommands = cli.commands.map(cmd => cmd.name).filter(Boolean)
       showCommandNotFoundMessage(error.commandName, availableCommands)
       process.exit(1)
-    } else if (error instanceof CliError) {
-      console.error(red(`Error: ${error.message}`))
-      process.exit(1)
-    } else if (error instanceof APICallError) {
-      console.error(red(`API Error: ${error.message}`))
-      process.exit(1)
-    } else if (error instanceof ValidationError) {
-      console.error(red(`Validation Error: ${error.message}`))
-      process.exit(1)
     } else {
-      console.error(red(`Unexpected error: ${error.message || error}`))
-      if (process.env.DEBUG) {
-        console.error(error)
-      } else {
-        console.log(`Run with DEBUG=true for more details.`)
-      }
-      process.exit(1)
+      // Use our global error handler for all other errors
+      handleGlobalError(error)
     }
   }
 }
 
 main().catch((error) => {
-  console.error(red(`Fatal error: ${error.message || String(error)}`))
-  if (process.env.DEBUG) {
-    console.error(error)
-  }
-  process.exit(1)
+  handleGlobalError(error)
 })
+
+// Add an unhandled rejection handler
+process.on('unhandledRejection', (reason) => {
+  console.error(red('\nUnhandled Promise Rejection'));
+  handleGlobalError(reason, false);
+  process.exit(1);
+});
+
+// Add uncaught exception handler
+process.on('uncaughtException', (error) => {
+  console.error(red('\nUncaught Exception'));
+  handleGlobalError(error, false);
+  process.exit(1);
+});

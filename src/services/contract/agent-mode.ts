@@ -11,6 +11,7 @@ import { loadConfig } from "../config/config";
 import { getSDKModel } from "../ai/ai-sdk";
 import logUpdate from "log-update";
 import { renderMarkdown, stripMarkdownCodeBlocks } from "../../utils/markdown";
+import path from "path";
 
 /**
  * Options for agent mode
@@ -61,6 +62,38 @@ function logAgentActivity(agent: Agent, message: string, context: AgentContext):
   const logMessage = `${agent.emoji} ${agent.name} Agent --> ${message}`;
   console.log(logMessage);
   context.agentLog.push(logMessage);
+}
+
+/**
+ * Ensures a directory exists, creating it and any parent directories if needed
+ * @param dirPath Directory path to ensure exists
+ */
+function ensureDirectoryExists(dirPath: string): void {
+  try {
+    fs.mkdirSync(dirPath, { recursive: true });
+  } catch (error: any) {
+    if (error.code !== 'EEXIST') {
+      throw error;
+    }
+  }
+}
+
+/**
+ * Safely write file content to a path, ensuring directory exists
+ * @param filePath Path to write to
+ * @param content Content to write
+ * @returns true if successful
+ */
+function safeWriteFileSync(filePath: string, content: string): boolean {
+  try {
+    const dir = path.dirname(filePath);
+    ensureDirectoryExists(dir);
+    fs.writeFileSync(filePath, content);
+    return true;
+  } catch (error) {
+    console.error(`❌ Error writing to ${filePath}:`, error);
+    return false;
+  }
 }
 
 /**
@@ -712,29 +745,45 @@ Provide a comprehensive test suite that:
     if (options.output && context.contractCode) {
       console.log(`\n💾 Saving files to disk...`);
       
-      // Strip markdown formatting before saving to file
-      const cleanContractCode = stripMarkdownCodeBlocks(context.contractCode);
-      fs.writeFileSync(options.output, cleanContractCode);
-      console.log(`✅ Contract saved to ${options.output}`);
-      
-      if (context.securityNotes) {
-        const securityPath = options.output.replace(/\.sol$/, '.security.md');
-        fs.writeFileSync(securityPath, context.securityNotes);
-        console.log(`✅ Security audit saved to ${securityPath}`);
+      try {
+        // Create output directory if it doesn't exist
+        const outputDir = path.dirname(options.output);
+        ensureDirectoryExists(outputDir);
+        
+        // Strip markdown formatting before saving to file
+        const cleanContractCode = stripMarkdownCodeBlocks(context.contractCode);
+        
+        // Save contract file
+        if (safeWriteFileSync(options.output, cleanContractCode)) {
+          console.log(`✅ Contract saved to ${options.output}`);
+        }
+        
+        // Save security notes if available
+        if (context.securityNotes) {
+          const securityPath = options.output.replace(/\.sol$/, '.security.md');
+          if (safeWriteFileSync(securityPath, context.securityNotes)) {
+            console.log(`✅ Security audit saved to ${securityPath}`);
+          }
+        }
+        
+        // Save test code if available
+        if (context.testCode) {
+          const testPath = options.output.replace(/\.sol$/, '.test.js');
+          // Strip markdown formatting from test code as well
+          const cleanTestCode = stripMarkdownCodeBlocks(context.testCode);
+          if (safeWriteFileSync(testPath, cleanTestCode)) {
+            console.log(`✅ Test file saved to ${testPath}`);
+          }
+        }
+        
+        // Save agent logs
+        const logsPath = options.output.replace(/\.sol$/, '.agent-logs.md');
+        if (safeWriteFileSync(logsPath, context.agentLog.join('\n'))) {
+          console.log(`✅ Agent logs saved to ${logsPath}`);
+        }
+      } catch (error) {
+        console.error(`❌ Error saving files:`, error);
       }
-      
-      if (context.testCode) {
-        const testPath = options.output.replace(/\.sol$/, '.test.js');
-        // Strip markdown formatting from test code as well
-        const cleanTestCode = stripMarkdownCodeBlocks(context.testCode);
-        fs.writeFileSync(testPath, cleanTestCode);
-        console.log(`✅ Test file saved to ${testPath}`);
-      }
-      
-      // Save agent logs
-      const logsPath = options.output.replace(/\.sol$/, '.agent-logs.md');
-      fs.writeFileSync(logsPath, context.agentLog.join('\n'));
-      console.log(`✅ Agent logs saved to ${logsPath}`);
     }
     
     console.log("\n✨ Agentic workflow complete - all agents have successfully collaborated!");

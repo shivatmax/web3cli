@@ -31,7 +31,7 @@ export async function readPipeInput(): Promise<string | undefined> {
     return undefined;
   }
 
-  return new Promise<string>((resolve) => {
+  return new Promise<string | undefined>((resolve) => {
     const chunks: Buffer[] = [];
     
     process.stdin.on("data", (chunk) => {

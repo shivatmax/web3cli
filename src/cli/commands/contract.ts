@@ -11,7 +11,7 @@ import {
   auditContract, 
   customContractRequest 
 } from '../../services/contract/contract-commands';
-import { mkdirSync } from 'fs';
+import fs from 'fs';
 import path from 'path';
 
 /**
@@ -20,12 +20,12 @@ import path from 'path';
  * @param cli The CLI command instance
  * @returns The configured command
  */
-export function registerContractCommand(cli: any): CliCommand {
+export function registerContractCommand(cli: any): void {
   // Ensure output directory exists
-  mkdirSync(path.join(process.cwd(), 'output'), { recursive: true });
+  fs.mkdirSync(path.join(process.cwd(), 'output'), { recursive: true });
   
   // Main contract command
-  const command = cli
+  cli
     .command('contract <source>', 'Analyze a smart contract')
     .option('-m, --model [model]', 'Choose the AI model to use, omit value to select interactively')
     .option('--network <network>', 'Ethereum network (default: sepolia)', { default: 'sepolia' })
@@ -43,9 +43,9 @@ export function registerContractCommand(cli: any): CliCommand {
       });
     });
   
-  // Explain subcommand
-  command
-    .command('explain <source>', 'Generate a technical explanation of a smart contract')
+  // Explain subcommand (registered as a separate command)
+  cli
+    .command('contract:explain <source>', 'Generate a technical explanation of a smart contract')
     .option('-m, --model [model]', 'Choose the AI model to use, omit value to select interactively')
     .option('--network <network>', 'Ethereum network (default: sepolia)', { default: 'sepolia' })
     .option('-o, --output [dir]', 'Output directory for results, omit value to use default')
@@ -62,8 +62,8 @@ export function registerContractCommand(cli: any): CliCommand {
     });
   
   // Audit subcommand
-  command
-    .command('audit <source>', 'Perform a security audit of a smart contract')
+  cli
+    .command('contract:audit <source>', 'Perform a security audit of a smart contract')
     .option('-m, --model [model]', 'Choose the AI model to use, omit value to select interactively')
     .option('--network <network>', 'Ethereum network (default: sepolia)', { default: 'sepolia' })
     .option('-o, --output [dir]', 'Output directory for results, omit value to use default')
@@ -80,18 +80,15 @@ export function registerContractCommand(cli: any): CliCommand {
     });
   
   // Custom query subcommand
-  command
-    .command('custom <source> [...query]', 'Ask a custom question about a smart contract')
+  cli
+    .command('contract:ask <source> <query>', 'Ask a specific question about a smart contract')
     .option('-m, --model [model]', 'Choose the AI model to use, omit value to select interactively')
     .option('--network <network>', 'Ethereum network (default: sepolia)', { default: 'sepolia' })
     .option('-o, --output [dir]', 'Output directory for results, omit value to use default')
     .option('--no-stream', 'Disable streaming output')
     .option('--read-docs <n>', 'Read indexed docs collection as context')
-    .action(async (source: string, query: string[], flags: any) => {
-      const pipeInput = await readPipeInput();
-      const queryString = query.join(' ') || pipeInput || 'Explain this contract in detail';
-      
-      await customContractRequest(source, queryString, {
+    .action(async (source: string, query: string, flags: any) => {
+      await customContractRequest(source, query, {
         model: flags.model,
         network: flags.network,
         output: flags.output !== false ? (flags.output || true) : false,
@@ -99,6 +96,4 @@ export function registerContractCommand(cli: any): CliCommand {
         readDocs: flags.readDocs
       });
     });
-  
-  return command;
 } 

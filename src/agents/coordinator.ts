@@ -7,6 +7,39 @@ import { FunctionalityAgent } from "./functionality";
 import { WebSearchAgent } from "./web-search";
 import { VectorStoreAgent } from "./vector-store";
 import fs from "node:fs";
+import path from "node:path";
+
+/**
+ * Ensures a directory exists, creating it and any parent directories if needed
+ * @param dirPath Directory path to ensure exists
+ */
+function ensureDirectoryExists(dirPath: string): void {
+  try {
+    fs.mkdirSync(dirPath, { recursive: true });
+  } catch (error: any) {
+    if (error.code !== 'EEXIST') {
+      throw error;
+    }
+  }
+}
+
+/**
+ * Safely write file content to a path, ensuring directory exists
+ * @param filePath Path to write to
+ * @param content Content to write
+ * @returns true if successful
+ */
+function safeWriteFileSync(filePath: string, content: string): boolean {
+  try {
+    const dir = path.dirname(filePath);
+    ensureDirectoryExists(dir);
+    fs.writeFileSync(filePath, content);
+    return true;
+  } catch (error) {
+    console.error(`❌ Error writing to ${filePath}:`, error);
+    return false;
+  }
+}
 
 /**
  * CoordinatorAgent - Orchestrates the smart contract generation process
@@ -143,15 +176,22 @@ export class CoordinatorAgent {
     
     // Write the final output to file if specified
     if (finalCode && options.output) {
-      fs.writeFileSync(options.output, finalCode);
-      console.log(`\n✅ Contract saved to ${options.output}`);
-      
-      // If hardhat tests were generated, save the test file too
-      if (options.hardhat && testCode && options.output) {
-        const contractName = options.output.replace(/\.sol$/, '');
-        const testFilename = `${contractName}.test.js`;
-        fs.writeFileSync(testFilename, testCode);
-        console.log(`✅ Test file saved to ${testFilename}`);
+      try {
+        // Save contract file
+        if (safeWriteFileSync(options.output, finalCode)) {
+          console.log(`\n✅ Contract saved to ${options.output}`);
+        }
+        
+        // If hardhat tests were generated, save the test file too
+        if (options.hardhat && testCode && options.output) {
+          const contractName = options.output.replace(/\.sol$/, '');
+          const testFilename = `${contractName}.test.js`;
+          if (safeWriteFileSync(testFilename, testCode)) {
+            console.log(`✅ Test file saved to ${testFilename}`);
+          }
+        }
+      } catch (error) {
+        console.error(`❌ Error saving files:`, error);
       }
     }
     

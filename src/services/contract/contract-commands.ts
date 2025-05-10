@@ -57,6 +57,9 @@ export async function explainContract(
     // Save contract data if output option is provided
     if (options.output) {
       const outputDir = path.join(process.cwd(), 'output', source);
+      // Create output directory
+      fs.mkdirSync(outputDir, { recursive: true });
+      
       const outputPath = path.join(outputDir, `${contractName}.sol`);
       
       const savedPaths = saveContractData(outputPath, contractData, source);
@@ -108,25 +111,36 @@ Be thorough yet concise. Focus on technical aspects that would be most relevant 
   
   if (options.stream !== false) {
     console.log(`Generating explanation using ${modelId}...`);
-    const stream = await openai.chat.completions.create({
-      model: modelId,
-      messages,
-      stream: true,
-    });
-
-    for await (const chunk of stream) {
-      const content_chunk = chunk.choices[0]?.delta?.content || '';
-      explanation += content_chunk;
-      logUpdate(renderMarkdown(explanation));
+    try {
+      const stream = await openai.chat.completions.create({
+        model: modelId,
+        messages,
+        stream: true,
+      });
+  
+      for await (const chunk of stream as any) {
+        const content_chunk = chunk.choices?.[0]?.delta?.content || '';
+        explanation += content_chunk;
+        logUpdate(renderMarkdown(explanation));
+      }
+      logUpdate.done();
+    } catch (error) {
+      console.error(`Error generating streaming explanation: ${error}`);
+      // Fall back to non-streaming if streaming fails
+      const completion = await openai.chat.completions.create({
+        model: modelId,
+        messages,
+      });
+      explanation = completion.choices?.[0]?.message?.content || '';
+      console.log(renderMarkdown(explanation));
     }
-    logUpdate.done();
   } else {
     console.log(`Generating explanation using ${modelId}...`);
     const completion = await openai.chat.completions.create({
       model: modelId,
       messages,
     });
-    explanation = completion.choices[0].message.content || '';
+    explanation = completion.choices?.[0]?.message?.content || '';
     console.log(renderMarkdown(explanation));
   }
   
@@ -143,7 +157,9 @@ Be thorough yet concise. Focus on technical aspects that would be most relevant 
       outputFilename = `${path.basename(source, path.extname(source))}.explanation.md`;
     }
     
+    // Create the output directory if it doesn't exist
     fs.mkdirSync(outputDir, { recursive: true });
+    
     const outputPath = path.join(outputDir, outputFilename);
     fs.writeFileSync(outputPath, explanation);
     console.log(`\n✅ Explanation saved to ${outputPath}`);
@@ -182,6 +198,9 @@ export async function auditContract(
     // Save contract data if output option is provided
     if (options.output) {
       const outputDir = path.join(process.cwd(), 'output', source);
+      // Create output directory
+      fs.mkdirSync(outputDir, { recursive: true });
+      
       const outputPath = path.join(outputDir, `${contractName}.sol`);
       
       const savedPaths = saveContractData(outputPath, contractData, source);
@@ -238,25 +257,36 @@ Be thorough and focus on actionable insights that would help developers improve 
   
   if (options.stream !== false) {
     console.log(`Generating audit using ${modelId}...`);
-    const stream = await openai.chat.completions.create({
-      model: modelId,
-      messages,
-      stream: true,
-    });
-
-    for await (const chunk of stream) {
-      const content_chunk = chunk.choices[0]?.delta?.content || '';
-      audit += content_chunk;
-      logUpdate(renderMarkdown(audit));
+    try {
+      const stream = await openai.chat.completions.create({
+        model: modelId,
+        messages,
+        stream: true,
+      });
+  
+      for await (const chunk of stream as any) {
+        const content_chunk = chunk.choices?.[0]?.delta?.content || '';
+        audit += content_chunk;
+        logUpdate(renderMarkdown(audit));
+      }
+      logUpdate.done();
+    } catch (error) {
+      console.error(`Error generating streaming audit: ${error}`);
+      // Fall back to non-streaming if streaming fails
+      const completion = await openai.chat.completions.create({
+        model: modelId,
+        messages,
+      });
+      audit = completion.choices?.[0]?.message?.content || '';
+      console.log(renderMarkdown(audit));
     }
-    logUpdate.done();
   } else {
     console.log(`Generating audit using ${modelId}...`);
     const completion = await openai.chat.completions.create({
       model: modelId,
       messages,
     });
-    audit = completion.choices[0].message.content || '';
+    audit = completion.choices?.[0]?.message?.content || '';
     console.log(renderMarkdown(audit));
   }
   
@@ -273,7 +303,9 @@ Be thorough and focus on actionable insights that would help developers improve 
       outputFilename = `${path.basename(source, path.extname(source))}.audit.md`;
     }
     
+    // Create the output directory if it doesn't exist
     fs.mkdirSync(outputDir, { recursive: true });
+    
     const outputPath = path.join(outputDir, outputFilename);
     fs.writeFileSync(outputPath, audit);
     console.log(`\n✅ Audit saved to ${outputPath}`);
@@ -314,6 +346,9 @@ export async function customContractRequest(
     // Save contract data if output option is provided
     if (options.output) {
       const outputDir = path.join(process.cwd(), 'output', source);
+      // Create output directory
+      fs.mkdirSync(outputDir, { recursive: true });
+      
       const outputPath = path.join(outputDir, `${contractName}.sol`);
       
       const savedPaths = saveContractData(outputPath, contractData, source);
@@ -355,25 +390,36 @@ You will be given a Solidity smart contract and a specific query about it. Focus
   
   if (options.stream !== false) {
     console.log(`Generating response using ${modelId}...`);
-    const stream = await openai.chat.completions.create({
-      model: modelId,
-      messages,
-      stream: true,
-    });
-
-    for await (const chunk of stream) {
-      const content_chunk = chunk.choices[0]?.delta?.content || '';
-      response += content_chunk;
-      logUpdate(renderMarkdown(response));
+    try {
+      const stream = await openai.chat.completions.create({
+        model: modelId,
+        messages,
+        stream: true,
+      });
+  
+      for await (const chunk of stream as any) {
+        const content_chunk = chunk.choices?.[0]?.delta?.content || '';
+        response += content_chunk;
+        logUpdate(renderMarkdown(response));
+      }
+      logUpdate.done();
+    } catch (error) {
+      console.error(`Error generating streaming response: ${error}`);
+      // Fall back to non-streaming if streaming fails
+      const completion = await openai.chat.completions.create({
+        model: modelId,
+        messages,
+      });
+      response = completion.choices?.[0]?.message?.content || '';
+      console.log(renderMarkdown(response));
     }
-    logUpdate.done();
   } else {
     console.log(`Generating response using ${modelId}...`);
     const completion = await openai.chat.completions.create({
       model: modelId,
       messages,
     });
-    response = completion.choices[0].message.content || '';
+    response = completion.choices?.[0]?.message?.content || '';
     console.log(renderMarkdown(response));
   }
   
@@ -393,7 +439,9 @@ You will be given a Solidity smart contract and a specific query about it. Focus
       outputFilename = `${path.basename(source, path.extname(source))}.${sanitizedQuery}.md`;
     }
     
+    // Create the output directory if it doesn't exist
     fs.mkdirSync(outputDir, { recursive: true });
+    
     const outputPath = path.join(outputDir, outputFilename);
     fs.writeFileSync(outputPath, response);
     console.log(`\n✅ Response saved to ${outputPath}`);
