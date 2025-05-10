@@ -54,3 +54,4 @@ schema.json
 terminal-ai.toml
 paper.tex
 web3cli.toml
+.vector-db/
