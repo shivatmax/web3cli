@@ -36,16 +36,40 @@ Create a `web3cli.toml` file in your project directory:
 ```toml
 #:schema ./schema.json
 default_model = "gpt-4o-mini" # or another model
+
+# OpenAI Configuration
 openai_api_key = "your-openai-api-key"
-etherscan_api_key = "your-etherscan-api-key" # optional
+
+# Gemini Configuration - for Google Gemini models
+# gemini_api_key = "your-gemini-api-key"
+
+# Anthropic Configuration - for Claude models
+# anthropic_api_key = "your-anthropic-api-key"
+
+# Groq Configuration - for faster inference
+# groq_api_key = "your-groq-api-key"
+
+# Mistral Configuration
+# mistral_api_key = "your-mistral-api-key"
+
+# Ollama Configuration - for local models
+# ollama_host = "http://localhost:11434"
+
+# Etherscan API key (optional, for contract analysis)
+etherscan_api_key = "your-etherscan-api-key"
 ```
 
 Or set environment variables:
-- `OPENAI_API_KEY`
-- `ETHERSCAN_API_KEY` (optional, for fetching contract ABIs)
+- `OPENAI_API_KEY` - For OpenAI models
+- `GEMINI_API_KEY` - For Google Gemini models
+- `ANTHROPIC_API_KEY` - For Claude models
+- `GROQ_API_KEY` - For Groq inference
+- `MISTRAL_API_KEY` - For Mistral models
+- `ETHERSCAN_API_KEY` - For contract analysis (optional)
 
 ## Key Features
 
+- **Multi-Provider AI Support** - Works with OpenAI, Anthropic/Claude, Google Gemini, Groq, Mistral, GitHub Copilot, and Ollama
 - **Natural Language to Solidity Code** - Generate smart contracts from plain English
 - **Security-First Approach** - Built-in guardrails to prevent insecure patterns
 - **Contract Explainability** - Analyze contracts for permissions and security patterns
@@ -53,6 +77,33 @@ Or set environment variables:
 - **Vector Database** - Local storage of blockchain documentation and security patterns
 - **Web Search** - Up-to-date information for secure implementations
 - **CLI and Terminal Interface** - Developer-friendly command-line tools
+- **Robust File System Handling** - Automatically creates necessary directories for output
+
+## Supported AI Models
+
+Web3CLI supports a wide range of AI models across multiple providers:
+
+### OpenAI
+- GPT-4o, GPT-4o-mini, GPT-4.1, GPT-3.5-turbo
+- OpenAI "o" series: o1, o1-mini, o3, o4-mini, etc.
+
+### Anthropic
+- Claude 3.7 Sonnet, Claude 3.5 Sonnet, Claude 3.5 Haiku, Claude 3 Opus
+
+### Google Gemini
+- Gemini 2.5 Flash, Gemini 2.5 Pro, Gemini 2.0, Gemini 1.5
+
+### Groq
+- Llama 3.3 70B, Llama 3.1 8B, Mixtral 8x7B
+
+### Mistral
+- Mistral Large, Mistral Medium, Mistral Small
+
+### GitHub Copilot
+- Copilot models with GPT-4o, o1, Claude 3.5 backend options
+
+### Ollama
+- Local models via Ollama server
 
 ## Usage Examples
 
@@ -67,6 +118,10 @@ web3cli "What is the current gas cost for token transfers?" --search
 
 # Ask with specific model
 web3cli "Explain the EIP-2981 royalty standard" --model gpt-4o
+
+# Ask with alternative providers
+web3cli "Explain the EIP-2981 royalty standard" --model claude-3-5-sonnet
+web3cli "Explain gas optimization" --model gemini-2.5-flash
 
 # List available models
 web3cli list
@@ -187,7 +242,13 @@ The vector database stores and returns documents with this structure:
 ## Design Tradeoffs
 
 ### Model Choice
-- **GPT-4o** - Superior understanding of Solidity but higher cost
+- Multiple AI providers supported for flexibility and performance
+- **OpenAI/GPT-4o** - Superior understanding of Solidity but higher cost
+- **Claude models** - Strong reasoning for complex contracts
+- **Gemini models** - Good balance of capabilities and cost 
+- **Groq models** - Fast inference for time-sensitive tasks
+- **Mistral models** - Efficient performance for routine tasks
+- **Ollama** - Local models for privacy and offline work
 - Security is prioritized over cost for critical smart contract generation
 - Lesser models used for non-critical tasks like search and documentation
 
@@ -227,12 +288,20 @@ web3cli/
 
 Web3CLI is built with the following key technologies:
 
-- **OpenAI API/Claude API**: Powers the AI capabilities
-- **LangChain**: Framework for multi-agent operations
-- **OpenAI Embeddings**: For vector representation
-- **ethers.js**: Ethereum interaction library
-- **Solidity Compiler**: For validating contracts
-- **CAC**: Lightweight CLI framework
+- **Multiple AI Providers** - OpenAI, Anthropic, Google, Groq, Mistral, GitHub Copilot, and Ollama
+- **LangChain** - Framework for multi-agent operations
+- **OpenAI Embeddings** - For vector representation
+- **ethers.js** - Ethereum interaction library
+- **Solidity Compiler** - For validating contracts
+- **CAC** - Lightweight CLI framework
+
+## Recent Updates
+
+- **Multi-Provider AI Support** - Added support for Claude, Gemini, Groq, Mistral, GitHub Copilot, and Ollama models
+- **Improved File System Handling** - Now automatically creates output directories as needed
+- **Enhanced Error Handling** - Better error messages for common issues
+- **Model Selection Improvements** - Simplified model selection and provider detection
+- **MetaMask Error Handling Utility** - Added support for better MetaMask error handling
 
 ## Future Plans
 
