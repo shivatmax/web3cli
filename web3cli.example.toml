@@ -5,25 +5,28 @@ default_model = "gpt-4o-mini"
 
 # === OpenAI Configuration ===
 # OpenAI API key - replace with your actual key
-openai_api_key = "your-openai-api-key-here"
+openai_api_key = "your-openai-api-key"
 # Optional: Custom OpenAI API URL (if using a proxy or compatible API)
-# openai_api_url = "https://your-custom-endpoint.com/v1"
+# openai_api_url = "https://custom-openai-endpoint.com/v1"
 
 # === Gemini Configuration ===
 # Gemini API key - replace with your actual key
-gemini_api_key = "your-gemini-api-key-here"
+gemini_api_key = "your-gemini-api-key"
+# gemini_api_url = "https://generativelanguage.googleapis.com"
 
 # === Anthropic Configuration ===
 # Anthropic API key for Claude models
-# anthropic_api_key = "your-anthropic-api-key-here"
+# anthropic_api_key = "your-anthropic-api-key"
 
 # === Groq Configuration ===
 # Groq API key for faster inference
-# groq_api_key = "your-groq-api-key-here" 
+# groq_api_key = "your-groq-api-key"
+# groq_api_url = "https://api.groq.com/openai/v1"
 
 # === Mistral Configuration ===
 # Mistral API key
-# mistral_api_key = "your-mistral-api-key-here"
+# mistral_api_key = "your-mistral-api-key"
+# mistral_api_url = "https://api.mistral.ai/v1"
 
 # === Ollama Configuration ===
 # Ollama host for local models (default: http://localhost:11434)
@@ -31,7 +34,7 @@ gemini_api_key = "your-gemini-api-key-here"
 
 # === Blockchain Tools ===
 # Etherscan API key for fetching contract ABIs
-etherscan_api_key = "your-etherscan-api-key-here"
+etherscan_api_key = "your-etherscan-api-key"
 
 # === Custom Commands ===
 # Optional: Configure custom commands

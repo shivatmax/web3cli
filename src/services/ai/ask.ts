@@ -64,10 +64,12 @@ export async function ask(
         config.default_model ||
         "gpt-4o-mini"
 
+  // Include Ollama models when explicitly requested or when selecting from all models
+  const includeOllama = modelId === "select" || modelId.startsWith("ollama-");
+  
   const models = await getAllModels(
-    modelId === "select"
-      ? true
-      : false
+    modelId === "select" ? true : false,
+    includeOllama
   )
 
   if (modelId === "select") {

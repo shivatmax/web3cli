@@ -69,11 +69,34 @@ export async function getAllModels(includeAll = false, includeOllama = false) {
   
   if (includeOllama) {
     try {
-      // In a real implementation, this would fetch Ollama models
-      // For now, just add a sample Ollama model
-      models.push({ id: "ollama-llama3", realId: "llama3" });
+      // Fetch available Ollama models from the local server
+      const host = process.env.OLLAMA_HOST || "http://localhost:11434";
+      const response = await fetch(`${host}/api/tags`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.models && Array.isArray(data.models)) {
+          // Add each Ollama model to the list
+          data.models.forEach((model: any) => {
+            if (model.name) {
+              models.push({ 
+                id: `ollama-${model.name}`, 
+                realId: model.name 
+              });
+            }
+          });
+          
+          console.log(`Found ${data.models.length} local Ollama models`);
+        }
+      } else {
+        console.warn("Failed to connect to Ollama server - is it running?");
+        // Add a default model as a fallback
+        models.push({ id: "ollama-llama3", realId: "llama3" });
+      }
     } catch (error) {
       console.warn("Failed to fetch Ollama models:", error);
+      // Add a default model as a fallback
+      models.push({ id: "ollama-llama3", realId: "llama3" });
     }
   }
   
