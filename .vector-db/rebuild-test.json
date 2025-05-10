@@ -1,9 +1,0 @@
-[
-  {
-    "pageContent": "\n# Smart Contracts\n\nSmart contracts are programs which govern the behaviour of accounts within the Ethereum state.\n\n## Definition\n\nSmart contracts are collections of code (its functions) and data (its state) that reside at a specific \naddress on the Ethereum blockchain. Smart contracts are a type of Ethereum account. This means they \nhave a balance and can be the target of transactions. However, they're not controlled by a user, \ninstead they are deployed to the network and run as programmed. User accounts can then interact \nwith a smart contract by submitting transactions that execute a function defined on the smart contract. \nSmart contracts can define rules, like a regular contract, and automatically enforce them via the code.\n\n## Key Features\n\n1. **Immutable**: Once deployed, the code of a smart contract cannot be changed.\n2. **Deterministic**: The same input will always produce the same output.\n3. **Trustless**: No need to trust a third party, as the contract enforces its own rules.\n4. **Transparent**: All transactions on the blockchain are publicly visible.\n",
-    "metadata": {
-      "source": "rebuild-test",
-      "title": "Smart Contract Definition"
-    }
-  }
-]
