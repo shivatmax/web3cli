@@ -15,6 +15,7 @@ import { registerListCommand } from "./commands/list";
 import updateNotifier from "update-notifier";
 import { CliError } from "../utils/error";
 import { APICallError } from "ai";
+import { step, success, fail } from "../utils/logger";
 
 // Package version info (injected by build process)
 declare const PKG_NAME: string;
@@ -54,21 +55,16 @@ async function main() {
     cli.parse(process.argv, { run: false });
     await cli.runMatchedCommand();
   } catch (error) {
-    if (error instanceof CliError) {
-      console.error(error.message);
-      process.exit(1);
-    } else if (error instanceof APICallError) {
-      console.error("API Error:", error.message);
-      process.exit(1);
-    } else {
-      console.error(error);
-      process.exit(1);
-    }
+    // Unified clean error logging
+    const msg = error instanceof Error ? error.message : String(error);
+    fail(`Error: ${msg}`);
+    process.exit(1);
   }
 }
 
 // Run the main function
 main().catch((error) => {
-  console.error(error);
+  const msg = error instanceof Error ? error.message : String(error);
+  fail(`Error: ${msg}`);
   process.exit(1);
 }); 

@@ -56,3 +56,6 @@ paper.tex
 web3cli.toml
 .vector-db/
 .output/
+.Lib/
+.husky/
+

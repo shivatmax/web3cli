@@ -148,8 +148,11 @@ web3cli list
 ### Natural Language to Smart Contract
 
 ```bash
-# Generate a secure ERC-20 token with allowlist
-web3cli generate "Create an ERC-20 token with minting restricted to addresses in an allowlist" --output Token.sol --no-stream
+# Generate an upgradeable ERC-20 using Transparent Proxy
+web3cli generate "Create an ERC-20 token with upgradeability" --transparent-proxy --output MyToken.sol --no-stream
+
+# Generate an NFT collection using UUPS proxy pattern with agent mode
+web3cli generate "Create an NFT collection with royalties and upgradeability" --uups-proxy --agent --output NFTCollection.sol --no-stream
 
 # Generate with agent mode for enhanced security
 web3cli generate "Create an ERC-20 token with minting restricted to addresses in an allowlist" --agent --output Token.sol --no-stream
@@ -204,6 +207,8 @@ This collaborative approach results in higher quality, more secure smart contrac
 - `--output <file>`: Output file for the generated contract
 - `--hardhat`: Generate Hardhat test file
 - `--agent`: Use hierarchical multi-agent mode
+- `--transparent-proxy`: Generate an upgradeable contract using the Transparent Proxy pattern (OpenZeppelin)
+- `--uups-proxy`: Generate an upgradeable contract using the UUPS pattern (OpenZeppelin)
 - `--files <files...>`: Additional context files
 - `--url <urls...>`: URLs to fetch as context
 - `--search`: Enable web search for context

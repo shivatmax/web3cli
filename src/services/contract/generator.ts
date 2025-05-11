@@ -23,6 +23,7 @@ export interface GenerateOptions {
   output?: string;
   hardhat?: boolean;
   pipeInput?: string;
+  proxy?: 'transparent' | 'uups';
 }
 
 /**
@@ -36,7 +37,7 @@ export async function generateContract(
   prompt: string,
   options: GenerateOptions
 ): Promise<{ code: string; securityNotes: string; testCode?: string }> {
-  console.log(`Generating smart contract for: ${prompt}`);
+  console.log('➤ Generating smart contract…');
   
   // Gather context from various sources
   let context = '';
@@ -70,7 +71,7 @@ export async function generateContract(
   const ai = getAIClient(options.model);
   
   // Build system prompt
-  const systemPrompt = buildSystemPrompt(prompt, context, options.hardhat);
+  const systemPrompt = buildSystemPrompt(prompt, context, options.hardhat, options.proxy);
   
   // Generate contract
   const result = await ai.generate(systemPrompt, {
@@ -79,6 +80,8 @@ export async function generateContract(
   
   // Parse the response
   const { code, securityNotes, testCode } = parseResponse(result.text);
+  
+  console.log('✅ Contract generated successfully.');
   
   // Save the contract to a file if requested
   if (options.output && code) {
@@ -113,8 +116,16 @@ export async function generateContract(
 function buildSystemPrompt(
   prompt: string, 
   context: string, 
-  generateTests: boolean = false
+  generateTests: boolean = false,
+  proxy?: 'transparent' | 'uups'
 ): string {
+  let proxyGuideline = '';
+  if (proxy === 'transparent') {
+    proxyGuideline = '\n9. Implement upgradeability using OpenZeppelin TransparentUpgradeableProxy pattern and organize the implementation, proxy, and deployment scripts in a clear folder structure (e.g., contracts/, proxy/, scripts/).';
+  } else if (proxy === 'uups') {
+    proxyGuideline = '\n9. Implement upgradeability using OpenZeppelin UUPS pattern (UUPSUpgradeable) and organize the implementation and deployment scripts in a clear folder structure (e.g., contracts/, proxy/, scripts/).';
+  }
+
   return `You are an expert Solidity developer specializing in secure smart contract development.
 Generate a secure, well-documented smart contract based on the following requirements:
 
@@ -131,7 +142,7 @@ Follow these guidelines:
 6. Implement proper input validation
 7. Use events for state changes
 8. Protect against common vulnerabilities
-${generateTests ? '9. Include Hardhat test cases to verify the contract functionality' : ''}
+${generateTests ? '9. Include Hardhat test cases to verify the contract functionality' : ''}${proxyGuideline}
 
 Respond with:
 1. The complete Solidity contract code

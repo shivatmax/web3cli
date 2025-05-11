@@ -23,6 +23,7 @@ export interface AgentModeOptions {
   search?: boolean;
   readDocs?: string;
   stream?: boolean;
+  proxy?: 'transparent' | 'uups';
 }
 
 /**
@@ -112,8 +113,8 @@ export async function runAgentMode(
   testCode?: string;
   logs: string[];
 }> {
-  console.log("🚀 Initializing Advanced Agentic System for smart contract generation...");
-  console.log("📊 Setting up specialized agents for collaborative development...");
+  console.log('➤ 🚀 Initializing Advanced Agentic System…');
+  console.log('➤ 📊 Setting up specialized agents…');
   
   try {
     // Load configuration
@@ -306,6 +307,7 @@ Output only valid Solidity code without additional explanations. The contract sh
 - Include comprehensive NatSpec documentation
 - Be gas-efficient
 - Include appropriate events, modifiers, and access control
+${context.options.proxy === 'transparent' ? '\n- Implement upgradeability using OpenZeppelin TransparentUpgradeableProxy pattern and organise code in contracts/, proxy/, and scripts/ folders' : ''}${context.options.proxy === 'uups' ? '\n- Implement upgradeability using OpenZeppelin UUPSUpgradeable pattern and organise code in contracts/, proxy/, and scripts/ folders' : ''}
 `
             },
             {

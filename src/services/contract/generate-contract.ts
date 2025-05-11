@@ -35,6 +35,7 @@ export async function generateContract(
     hardhat?: boolean;
     pipeInput?: string;
     readDocs?: string;
+    proxy?: 'transparent' | 'uups';
   } = {}
 ) {
   if (!prompt) {
@@ -90,6 +91,14 @@ ${content.content}
     .filter(notEmpty)
     .join("\n");
 
+  // Determine proxy-specific guidelines
+  let proxyGuideline = '';
+  if (options.proxy === 'transparent') {
+    proxyGuideline = 'Additionally, implement upgradeability using the OpenZeppelin TransparentUpgradeableProxy pattern. Provide the implementation contract with an initializer (no constructor) and include the TransparentUpgradeableProxy deployment setup. Organize the output in a folder structure such as contracts/, proxy/, and scripts/.';
+  } else if (options.proxy === 'uups') {
+    proxyGuideline = 'Additionally, implement upgradeability using the OpenZeppelin UUPS (Universal Upgradeable Proxy Standard) pattern. Ensure the implementation inherits from UUPSUpgradeable and has an initializer (no constructor). Organize the output in a folder structure such as contracts/, proxy/, and scripts/.';
+  }
+
   const messages: CoreMessage[] = [
     {
       role: "system",
@@ -104,6 +113,7 @@ Output only valid Solidity code without additional explanations. The contract sh
 - Include appropriate events, modifiers, and access control
 
 ${options.hardhat ? "After the contract, include a Hardhat test file that thoroughly tests the contract functionality." : ""}
+${proxyGuideline}
 `,
     },
     {

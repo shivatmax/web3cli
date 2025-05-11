@@ -20,6 +20,11 @@ import {
 } from "./services/contract/contract-commands"
 import { registerVectorDBCommands } from "./cli/commands/vector-db"
 import { registerContractCommand } from "./cli/commands/contract"
+import { step, success, fail, detail } from "./utils/logger"
+
+// Redirect console methods to clean log styles
+console.log = (...args: any[]) => step(args.join(" "));
+console.error = (...args: any[]) => fail(args.join(" "));
 
 if (typeof PKG_NAME === "string" && typeof PKG_VERSION === "string") {
   updateNotifier({
@@ -147,13 +152,19 @@ async function main() {
     .option("--hardhat", "Include Hardhat test file generation")
     .option("--agent", "Use hierarchical multi-agent mode (experimental)")
     .option("--max-lines <number>", "Maximum lines in the generated contract")
+    .option("--transparent-proxy", "Generate upgradeable contract using OpenZeppelin Transparent Proxy pattern")
+    .option("--uups-proxy", "Generate upgradeable contract using UUPS proxy pattern")
     .action(async (prompt, flags) => {
       const pipeInput = await readPipeInput()
+      // Determine proxy type from flags
+      const proxyType = flags.transparentProxy ? "transparent" : flags.uupsProxy ? "uups" : undefined;
+      const extendedFlags = { ...flags, pipeInput, proxy: proxyType };
+
       if (flags.agent) {
         console.log('🚀 Using experimental multi-agent mode')
-        await runAgentMode(prompt.join(" "), flags)
+        await runAgentMode(prompt.join(" "), extendedFlags)
       } else {
-        await generateContract(prompt.join(" "), { ...flags, pipeInput })
+        await generateContract(prompt.join(" "), extendedFlags)
       }
     })
 

@@ -7,7 +7,7 @@
 import axios from 'axios';
 import fs from 'node:fs';
 import path from 'node:path';
-import { loadConfig } from '../config/config';
+import { loadConfig, configDirPath } from '../config/config';
 import { ethers } from 'ethers';
 
 /**
@@ -113,7 +113,12 @@ export async function fetchContractSource(
   const apiKey = config.etherscan_api_key;
   
   if (!apiKey) {
-    throw new Error('Etherscan API key not found in configuration');
+    const localPath = path.join(process.cwd(), 'web3cli.toml');
+    const globalPath = path.join(configDirPath, 'web3cli.toml');
+    throw new Error(
+      `Etherscan API key not found. Please set the ETHERSCAN_API_KEY environment variable, ` +
+      `or add etherscan_api_key to your web3cli.toml configuration file (${localPath} or ${globalPath}).`
+    );
   }
   
   const network = getNetworkConfig(networkName);

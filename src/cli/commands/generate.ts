@@ -28,13 +28,17 @@ export function registerGenerateCommand(cli: any): CliCommand {
     .option('-o, --output <filename>', 'Output generated contract to a file')
     .option('--hardhat', 'Include Hardhat test file generation')
     .option('--agent', 'Use hierarchical multi-agent mode (experimental)')
+    .option('--transparent-proxy', 'Generate upgradeable contract using OpenZeppelin Transparent Proxy pattern')
+    .option('--uups-proxy', 'Generate upgradeable contract using UUPS proxy pattern')
     .action(async (prompt: string[], flags: any) => {
       const pipeInput = await readPipeInput();
+      const proxyType = flags.transparentProxy ? 'transparent' : flags.uupsProxy ? 'uups' : undefined;
+      const extendedFlags = { ...flags, pipeInput, proxy: proxyType };
       if (flags.agent) {
-        console.log('🚀 Using experimental multi-agent mode');
-        await runAgentMode(prompt.join(' '), flags);
+        console.log('➤ 🚀 Multi-agent mode enabled');
+        await runAgentMode(prompt.join(' '), extendedFlags);
       } else {
-        await generateContract(prompt.join(' '), { ...flags, pipeInput });
+        await generateContract(prompt.join(' '), extendedFlags);
       }
     });
     
