@@ -25,7 +25,12 @@
     "smart-contracts",
     "ai",
     "ethereum",
-    "cli"
+    "cli",
+    "web3cli",
+    "web3ai",
+    "LLM",
+    "AI",
+    "OpenAI"
   ],
   "scripts": {
     "build": "pnpm gen-config-schema && tsup",
