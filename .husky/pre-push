@@ -1,8 +1,0 @@
-# Always copy example to real before push
-if [ -f web3cli.example.toml ]; then
-  echo "Copying web3cli.example.toml → web3cli.toml"
-  cp web3cli.example.toml web3cli.toml
-  git add -f web3cli.toml
-  git rm web3cli.example.toml
-  git commit --amend --no-edit
-fi 
