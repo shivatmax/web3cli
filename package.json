@@ -1,6 +1,6 @@
 {
   "name": "@web3ai/cli",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "description": "Command-line AI assistant for Web3 developers",
   "type": "module",
   "bin": {
