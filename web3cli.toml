@@ -10,7 +10,7 @@ openai_api_key = "your-openai-api-key"
 # openai_api_url = "https://custom-openai-endpoint.com/v1"
 
 # === Gemini Configuration ===
-# Gemini API key - replace with your actual key
+
 gemini_api_key = "your-gemini-api-key"
 # gemini_api_url = "https://generativelanguage.googleapis.com"
 
