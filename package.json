@@ -1,0 +1,109 @@
+{
+  "name": "@web3ai/cli",
+  "version": "1.1.5",
+  "description": "Your AI-powered command-line companion for seamless Web3 development. Ask questions, get code suggestions, and accelerate your blockchain projects.",
+  "type": "module",
+  "bin": {
+    "web3cli": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "schema.json"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shivatmax/web3cli"
+  },
+  "homepage": "https://github.com/shivatmax/web3cli#readme",
+  "bugs": {
+    "url": "https://github.com/shivatmax/web3cli/issues"
+  },
+  "author": "shiv-awasthi",
+  "email": "awasthishiv0987@gmail.com",
+  "keywords": [
+    "web3",
+    "solidity",
+    "smart-contracts",
+    "cli",
+    "web3cli",
+    "web3ai",
+    "llm",
+    "ai",
+    "openai",
+    "help",
+    "assistant",
+    "blockchain",
+    "smart contracts",
+    "ethereum",
+    "developer tools",
+    "devtool",
+    "gpt",
+    "large language model",
+    "code assistant",
+    "copilot",
+    "uups-proxy",
+    "transparent-proxy"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "prepare": "husky",
+    "build": "npm run gen-config-schema && tsup",
+    "postinstall": "node scripts/create-default-config.js",
+    "dev": "npm run build -- --watch",
+    "prepublishOnly": "npm run build",
+    "gen-config-schema": "bun scripts/gen-config-schema.ts",
+    "link": "npm link",
+    "publish-package": "npm publish --access public"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^1.0.0",
+    "@ai-sdk/openai": "^1.0.0",
+    "@anthropic-ai/sdk": "0.50.3",
+    "@google/generative-ai": "^0.24.1",
+    "@langchain/community": "^0.3.42",
+    "@langchain/core": "^0.3.55",
+    "@langchain/openai": "^0.5.10",
+    "@mozilla/readability": "^0.6.0",
+    "ai": "4.3.15",
+    "axios": "^1.9.0",
+    "cac": "^6.7.14",
+    "cheerio": "^1.0.0",
+    "cli-cursor": "^5.0.0",
+    "colorette": "^2.0.20",
+    "commander": "13.1.0",
+    "ethers": "^6.14.0",
+    "fast-glob": "^3.3.2",
+    "joycon": "^3.1.1",
+    "jsdom": "^26.1.0",
+    "langchain": "^0.3.24",
+    "log-update": "^6.0.0",
+    "marked": "15.0.11",
+    "marked-terminal": "7.3.0",
+    "node-html-parser": "^7.0.1",
+    "openai": "^4.97.0",
+    "ora": "5.4.1",
+    "prompts": "2.4.2",
+    "smol-toml": "^1.3.1",
+    "terminal-link": "^4.0.0",
+    "tslib": "^2.6.2",
+    "update-notifier": "7.3.1",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^21.1.7",
+    "@types/marked-terminal": "^6.1.1",
+    "@types/node": "22.15.17",
+    "@types/ora": "3.1.0",
+    "@types/prompts": "^2.4.9",
+    "@types/update-notifier": "^6.0.8",
+    "husky": "^9.1.7",
+    "rimraf": "6.0.1",
+    "tsup": "8.4.0",
+    "typescript": "5.8.3",
+    "zod-to-json-schema": "3.24.5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
