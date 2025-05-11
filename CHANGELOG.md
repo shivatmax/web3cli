@@ -5,7 +5,7 @@ All notable changes to the @web3ai/cli package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2024-06-28
+## [1.0.0] - 2025-05-10
 
 ### Added
 - Multi-Provider AI Support (OpenAI, Anthropic/Claude, Google Gemini, Groq, Mistral, GitHub Copilot, and Ollama)
@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Initial npm package release
 
-## [0.9.0] - 2024-06-15
+## [1.1.0] - 2025-05-10
 
 ### Added
 - Improved File System Handling - Now automatically creates output directories as needed
@@ -30,9 +30,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Model Selection Improvements - Simplified model selection and provider detection
 - MetaMask Error Handling Utility
 
-## [0.8.0] - 2024-05-30
+## [1.1.2] - 2025-05-11
 
 ### Added
 - Initial GitHub repository version
 - Core functionality for Solidity smart contract generation
-- Basic AI integration with OpenAI 
+
+## [1.1.3] - 2025-05-11
+
+### Added
+- Officially added MIT License.
+- added uups-proxy and transparent-proxy

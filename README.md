@@ -1,6 +1,30 @@
 # Web3CLI: AI-Powered Smart Contract Tool
 
+<!-- Add Badges Here: e.g., npm version, license, build status -->
+[![npm version](https://badge.fury.io/js/%40web3ai%2Fcli.svg)](https://badge.fury.io/js/%40web3ai%2Fcli)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<!-- Add other badges like build status, PRs welcome, etc. -->
+
 A comprehensive suite for generating secure Solidity smart contracts and analyzing existing contracts using AI.
+
+## Table of Contents
+- [Overview](#overview)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Key Features](#key-features)
+- [Supported AI Models](#supported-ai-models)
+- [Usage Examples](#usage-examples)
+- [Agent Mode](#agent-mode)
+- [Options](#options)
+- [Vector Database](#vector-database)
+- [Design Tradeoffs](#design-tradeoffs)
+- [Project Structure](#project-structure)
+- [Core Technologies](#core-technologies)
+- [Recent Updates](#recent-updates)
+- [Future Plans](#future-plans)
+- [Contributing](#contributing)
+- [Community & Support](#community--support)
+- [License](#license)
 
 ## Overview
 
@@ -326,6 +350,8 @@ Web3CLI is built with the following key technologies:
 - **Model Selection Improvements** - Simplified model selection and provider detection
 - **MetaMask Error Handling Utility** - Added support for better MetaMask error handling
 
+See the [CHANGELOG.md](CHANGELOG.md) for a full history of changes.
+
 ## Future Plans
 
 1. **Formal Verification Integration** - Connect with formal verification tools for critical contracts
@@ -334,6 +360,24 @@ Web3CLI is built with the following key technologies:
 4. **Web Interface** - Develop a web-based UI for easier adoption
 5. **Expanded Chain Support** - Add support for additional EVM-compatible chains
 
+## Contributing
+
+We welcome contributions to Web3CLI! If you're interested in helping, please:
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix.
+3. Make your changes.
+4. Ensure your code adheres to the project's linting and formatting standards.
+5. Submit a pull request with a clear description of your changes.
+
+Please check our [issues page](https://github.com/shivatmax/web3cli/issues) for areas where you can contribute.
+
+## Community & Support
+
+- **Questions & Discussions:** For general questions, discussions, or support, please open an issue on our [GitHub Issues page](https://github.com/shivatmax/web3cli/issues).
+- **Bug Reports:** If you find a bug, please report it by creating an issue, providing as much detail as possible.
+
 ## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details (though your project uses the standard MIT text, so a separate LICENSE file might not be strictly necessary if you clearly state "MIT" in `package.json` and here).
 
 MIT

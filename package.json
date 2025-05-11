@@ -1,7 +1,7 @@
 {
   "name": "@web3ai/cli",
-  "version": "1.1.2",
-  "description": "Command-line AI assistant for Web3 developers",
+  "version": "1.1.3",
+  "description": "Your AI-powered command-line companion for seamless Web3 development. Ask questions, get code suggestions, and accelerate your blockchain projects.",
   "type": "module",
   "bin": {
     "web3cli": "./dist/cli.js"
@@ -18,25 +18,33 @@
   "bugs": {
     "url": "https://github.com/shivatmax/web3cli/issues"
   },
+  "author": "shiv-awasthi",
+  "email": "awasthishiv0987@gmail.com",
   "keywords": [
     "web3",
-    "blockchain",
     "solidity",
     "smart-contracts",
-    "ai",
-    "ethereum",
     "cli",
     "web3cli",
     "web3ai",
-    "LLM",
-    "AI",
-    "OpenAI",
-    "Help",
-    "Assistant",
-    "Blockchain",
-    "Smart Contracts",
-    "Ethereum"
+    "llm",
+    "ai",
+    "openai",
+    "help",
+    "assistant",
+    "blockchain",
+    "smart contracts",
+    "ethereum",
+    "developer tools",
+    "devtool",
+    "gpt",
+    "large language model",
+    "code assistant",
+    "copilot",
+    "uups-proxy",
+    "transparent-proxy"
   ],
+  "license": "MIT",
   "scripts": {
     "prepare": "husky",
     "build": "pnpm gen-config-schema && tsup",
