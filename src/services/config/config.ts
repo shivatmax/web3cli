@@ -125,7 +125,6 @@ export type Config = z.infer<typeof ConfigSchema>;
 export function loadConfig(): Config {
   const joycon = new JoyCon.default();
 
-  // Add TOML loader
   joycon.addLoader({
     test: /\.toml$/,
     loadSync: (filepath: string) => {
@@ -134,17 +133,11 @@ export function loadConfig(): Config {
     },
   });
 
-  /**
-   * Safely load configuration files
-   */
-  function safeLoad(filenames: string[], cwd: string, stopDir: string) {
+  function safeLoad(filenames: string[], cwd: string, stopDir: string): Config | undefined {
     try {
       const result = joycon.loadSync(filenames, cwd, stopDir);
       return result.data as Config | undefined;
     } catch (err) {
-      // JoyCon will throw if it finds a file but fails to parse JSON/TOML.
-      // Instead of crashing the whole CLI we ignore the malformed file and
-      // continue – printing a helpful diagnostic so the user can fix it.
       const message = err instanceof Error ? err.message : String(err);
       console.warn(
         `Warning: ignored malformed config while reading ${filenames.join(", ")} — ${message}`
@@ -153,9 +146,8 @@ export function loadConfig(): Config {
     }
   }
 
-  // Load global and local configurations
   const globalConfig = safeLoad(
-    ["config.json", "config.toml"],
+    ["web3cli.json", "web3cli.toml"],
     configDirPath,
     path.dirname(configDirPath)
   );
@@ -166,17 +158,24 @@ export function loadConfig(): Config {
     path.dirname(process.cwd())
   );
 
-  // Merge configurations with local taking precedence
-  const config = {
-    ...globalConfig,
-    ...localConfig,
-    commands: [
-      ...(globalConfig?.commands || []),
-      ...(localConfig?.commands || []),
-    ],
+  let baseConfig: Config | undefined = undefined;
+  let commandsFromConfig: AICommand[] = [];
+
+  if (globalConfig) {
+    baseConfig = { ...globalConfig };
+    commandsFromConfig = [...(globalConfig.commands || [])];
+  } else if (localConfig) {
+    baseConfig = { ...localConfig };
+    commandsFromConfig = [...(localConfig.commands || [])];
+  } else {
+    baseConfig = {}; // Ensure baseConfig is always an object
+  }
+
+  const config: Config = {
+    ...(baseConfig as Config), // Spread, ensuring it's treated as Config
+    commands: commandsFromConfig,
   };
 
-  // Add environment variables with appropriate fallbacks
   const envVarMapping = {
     openai_api_key: "OPENAI_API_KEY",
     openai_api_url: "OPENAI_API_URL",
@@ -191,7 +190,6 @@ export function loadConfig(): Config {
     ollama_host: "OLLAMA_HOST",
   };
 
-  // Populate config from environment variables if not already set
   for (const [configKey, envVar] of Object.entries(envVarMapping)) {
     if (process.env[envVar] && !(config as any)[configKey]) {
       (config as any)[configKey] = process.env[envVar];

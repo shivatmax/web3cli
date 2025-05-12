@@ -42,8 +42,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Officially added MIT License.
 - added uups-proxy and transparent-proxy
 
-## [1.1.5] - 2025-05-12
+## [1.1.6] - 2025-05-12
 
 ### Added
 - change the default package manager to npm
 - Fixed agent mode
+
+## [1.1.7] - 2025-05-12
+
+### Added
+- config Update
