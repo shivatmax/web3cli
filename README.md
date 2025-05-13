@@ -7,6 +7,8 @@
 
 A comprehensive suite for generating secure Solidity smart contracts and analyzing existing contracts using AI.
 
+![Web3ai logo](/web3ailogo.png)
+
 ## Table of Contents
 - [Overview](#overview)
 - [Installation](#installation)
